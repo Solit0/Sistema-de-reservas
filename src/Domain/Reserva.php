@@ -2,62 +2,43 @@
 
 declare(strict_types=1);
 
-namespace App;
+namespace App\Domain;
 
-/**
- * Representa una reserva concreta hecha sobre un espacio.
- *
- * @concept ENCAPSULAMIENTO
- * Todos los atributos son privados y de solo lectura (readonly) tras
- * su creación; una Reserva no cambia de estado una vez confirmada,
- * lo cual evita inconsistencias (p. ej. modificar el costo luego de
- * generado el reporte del día).
- *
- * @concept ABSTRACCION
- * Reserva no sabe CÓMO se calculó el costo ni el tipo de espacio
- * reservado; solo almacena el resultado (Reservable, Horario,
- * titular y costo), delegando el cálculo al propio Espacio a través
- * del contrato Reservable.
- */
 final class Reserva
 {
     private static int $contador = 0;
 
     private readonly int $id;
-    private readonly Reservable $espacio;
     private readonly Horario $horario;
     private readonly string $titular;
-    private readonly float $costo;
+    private readonly float $costoCalculado;
+    private readonly bool $esPico;
 
     public function __construct(
-        Reservable $espacio,
         Horario $horario,
         string $titular,
-        float $costo
+        float $costoCalculado,
+        bool $esPico = false
     ) {
         if (trim($titular) === '') {
             throw new \InvalidArgumentException('El titular de la reserva no puede estar vacío.');
         }
-        if ($costo < 0) {
-            throw new \InvalidArgumentException('El costo no puede ser negativo.');
+
+        if ($costoCalculado < 0) {
+            throw new \InvalidArgumentException('El costo calculado no puede ser negativo.');
         }
 
         self::$contador++;
         $this->id = self::$contador;
-        $this->espacio = $espacio;
         $this->horario = $horario;
         $this->titular = $titular;
-        $this->costo = $costo;
+        $this->costoCalculado = $costoCalculado;
+        $this->esPico = $esPico;
     }
 
     public function getId(): int
     {
         return $this->id;
-    }
-
-    public function getEspacio(): Reservable
-    {
-        return $this->espacio;
     }
 
     public function getHorario(): Horario
@@ -70,9 +51,14 @@ final class Reserva
         return $this->titular;
     }
 
-    public function getCosto(): float
+    public function getCostoCalculado(): float
     {
-        return $this->costo;
+        return $this->costoCalculado;
+    }
+
+    public function esPico(): bool
+    {
+        return $this->esPico;
     }
 
     public function __toString(): string
@@ -82,7 +68,7 @@ final class Reserva
             $this->id,
             $this->titular,
             (string) $this->horario,
-            $this->costo
+            $this->costoCalculado
         );
     }
 }

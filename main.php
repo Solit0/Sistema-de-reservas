@@ -9,6 +9,7 @@ use App\Domain\Espacios\EscritorioIndividual;
 use App\Domain\Espacios\SalaReunion;
 use App\Domain\Horario;
 use App\Services\GestorReservas;
+use App\Services\ReporteConsolaService;
 use App\Services\ReservaStorageService;
 
 function imprimirCabecera(): void
@@ -87,7 +88,12 @@ imprimirCabecera();
 
 // 1. Carga y Reporte Polimórfico del Día
 $gestor = construirReservas();
-$gestor->generarReporteDelDia(new DateTimeImmutable('2026-08-19'));
+$fechaReporte = new DateTimeImmutable('2026-08-19');
+$gestor->generarReporteDelDia($fechaReporte);
+(new ReporteConsolaService())->imprimirResumenEstadistico(
+    $fechaReporte,
+    $gestor->obtenerEspacios()
+);
 
 // 2. Consulta de Disponibilidad Polimórfica
 echo "\nEstado de disponibilidad por espacio (15:00 a 16:00):\n";

@@ -93,6 +93,49 @@ final class ReporteConsolaService
     }
 
     /**
+     * @param Reservable[] $espacios
+     */
+    public function imprimirResumenEstadistico(DateTimeInterface $fecha, array $espacios): void
+    {
+        $totalRecaudado = 0.0;
+        $horasReservadas = 0.0;
+        $horasPorEspacio = [];
+
+        foreach ($espacios as $espacio) {
+            $horasPorEspacio[$espacio->getNombre()] = 0.0;
+
+            foreach ($this->obtenerReservasDelDia($espacio, $fecha) as $reserva) {
+                $totalRecaudado += $reserva->getCostoCalculado();
+                $duracion = $reserva->getHorario()->obtenerDuracionEnHoras();
+                $horasReservadas += $duracion;
+                $horasPorEspacio[$espacio->getNombre()] += $duracion;
+            }
+        }
+
+        $maximoHoras = $horasPorEspacio === [] ? 0.0 : max($horasPorEspacio);
+        $espaciosMasDemandados = array_keys(
+            array_filter(
+                $horasPorEspacio,
+                static fn (float $horas): bool => $horas === $maximoHoras && $horas > 0
+            )
+        );
+        $capacidadDiariaEnHoras = count($espacios) * 24;
+        $porcentajeOcupacion = $capacidadDiariaEnHoras > 0
+            ? ($horasReservadas / $capacidadDiariaEnHoras) * 100
+            : 0.0;
+
+        echo "\n=== RESUMEN ESTADÍSTICO DEL DÍA " . $fecha->format('Y-m-d') . " ===\n";
+        echo 'Total recaudado: $' . number_format($totalRecaudado, 2, ',', '.') . "\n";
+        echo 'Espacio más demandado: ' . (
+            $espaciosMasDemandados === []
+                ? 'Ninguno'
+                : implode(', ', $espaciosMasDemandados)
+        ) . ' (' . number_format($maximoHoras, 2, ',', '.') . " horas reservadas)\n";
+        echo 'Ocupación del centro: ' . number_format($porcentajeOcupacion, 2, ',', '.')
+            . "% (sobre 24 horas por espacio)\n\n";
+    }
+
+    /**
      * @return \App\Domain\Reserva[]
      */
     private function obtenerReservasDelDia(Reservable $espacio, DateTimeInterface $fecha): array

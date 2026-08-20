@@ -2,19 +2,12 @@
 
 declare(strict_types=1);
 
-namespace App;
+namespace App\Domain;
 
 use DateTimeImmutable;
+use DateTimeInterface;
 use InvalidArgumentException;
 
-/**
- * Representa un rango de tiempo (fecha/hora de inicio y fin).
- *
- * @concept ENCAPSULAMIENTO
- * Las propiedades son privadas e inmutables (readonly). El objeto se
- * valida a sí mismo en el constructor, garantizando que nunca exista
- * un Horario inválido (fin antes que inicio) en el sistema.
- */
 final class Horario
 {
     private readonly DateTimeImmutable $inicio;
@@ -42,27 +35,31 @@ final class Horario
         return $this->fin;
     }
 
-    /**
-     * Duración del horario en minutos.
-     */
-    public function duracionEnMinutos(): int
-    {
-        $segundos = $this->fin->getTimestamp() - $this->inicio->getTimestamp();
-        return (int) ($segundos / 60);
-    }
-
-    /**
-     * Determina si este horario se superpone con otro.
-     * Útil para que las clases concretas resuelvan disponibilidad.
-     */
-    public function seSuperponeCon(Horario $otro): bool
+    public function seSolapaCon(Horario $otro): bool
     {
         return $this->inicio < $otro->getFin() && $this->fin > $otro->getInicio();
     }
 
-    public function fecha(): string
+    public function obtenerDuracionEnMinutos(): int
+    {
+        $segundos = $this->fin->getTimestamp() - $this->inicio->getTimestamp();
+
+        return (int) abs($segundos / 60);
+    }
+
+    public function obtenerDuracionEnHoras(): float
+    {
+        return $this->obtenerDuracionEnMinutos() / 60.0;
+    }
+
+    public function obtenerFecha(): string
     {
         return $this->inicio->format('Y-m-d');
+    }
+
+    public function perteneceALaFecha(DateTimeInterface $fecha): bool
+    {
+        return $this->inicio->format('Y-m-d') === $fecha->format('Y-m-d');
     }
 
     public function __toString(): string

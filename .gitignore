@@ -19,6 +19,8 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Archivos temporales
+# Archivos generados
+reservas.json
 *.tmp
 *.swp
+

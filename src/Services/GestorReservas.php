@@ -60,12 +60,12 @@ final class GestorReservas
     private function registrarReservaEnEspacio(Reservable $espacio, Reserva $reserva): void
     {
         foreach ($this->espacios as $espacioRegistrado) {
-            if ($espacioRegistrado === $espacio && method_exists($espacioRegistrado, 'agregarReserva')) {
+            if ($espacioRegistrado === $espacio) {
                 $espacioRegistrado->agregarReserva($reserva);
                 return;
             }
         }
 
-        throw new InvalidArgumentException('No se pudo registrar la reserva en el espacio indicado.');
+        throw new InvalidArgumentException('El espacio indicado no está registrado en el gestor.');
     }
 }

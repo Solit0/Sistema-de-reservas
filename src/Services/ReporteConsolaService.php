@@ -99,11 +99,9 @@ final class ReporteConsolaService
     {
         $reservas = [];
 
-        if (method_exists($espacio, 'obtenerReservas')) {
-            foreach ($espacio->obtenerReservas() as $reserva) {
-                if ($reserva->getHorario()->perteneceALaFecha($fecha)) {
-                    $reservas[] = $reserva;
-                }
+        foreach ($espacio->obtenerReservas() as $reserva) {
+            if ($reserva->getHorario()->perteneceALaFecha($fecha)) {
+                $reservas[] = $reserva;
             }
         }
 

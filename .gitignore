@@ -1,0 +1,24 @@
+# Dependencias de Composer
+/vendor/
+/composer.lock
+
+# Archivos de entorno local
+.env
+.env.*
+
+# Logs y cachés
+*.log
+.cache/
+.phpunit.result.cache
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+
+# Archivos temporales
+*.tmp
+*.swp

@@ -24,3 +24,10 @@ reservas.json
 *.tmp
 *.swp
 
+# Configuración local de la base de datos
+/config/config.php
+
+# Imágenes de espacios (uploads públicos)
+/public/uploads/*
+!/public/uploads/.gitkeep
+

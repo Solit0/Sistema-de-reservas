@@ -9,5 +9,9 @@
         "psr-4": {
             "App\\": "src/"
         }
+    },
+    "scripts": {
+        "test": "php tests/ReservasTest.php",
+        "start": "php main.php"
     }
 }

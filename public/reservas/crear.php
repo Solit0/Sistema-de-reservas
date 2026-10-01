@@ -110,19 +110,22 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
                         <?php
                             $esActivo = ($esp->getId() === $espacioSeleccionadoId);
                             $tipoStr = mb_strtolower($esp->getTipo());
-                            $icono = '🏢';
                             $tarifaTexto = '$180 / hora';
                             $tipoCode = 'sala';
 
                             if (str_contains($tipoStr, 'cancha')) {
-                                $icono = '⚽';
                                 $tarifaTexto = '$120 / bloque (60m)';
                                 $tipoCode = 'cancha';
                             } elseif (str_contains($tipoStr, 'escritorio')) {
-                                $icono = '💻';
                                 $tarifaTexto = '$75 / hora';
                                 $tipoCode = 'escritorio';
                             }
+
+                            $iconoSvg = match($tipoCode) {
+                                'cancha'     => '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>',
+                                'escritorio' => '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>',
+                                default      => '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+                            };
                         ?>
                         <div class="tarjeta-espacio-opt <?= $esActivo ? 'activa' : '' ?>"
                              data-id="<?= $esp->getId() ?>"
@@ -132,7 +135,7 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
                              data-capacidad="<?= $esp->getCapacidad() ?>"
                              data-tarifa-texto="<?= $tarifaTexto ?>">
                             <div style="display: flex; justify-content: space-between; align-items: center;">
-                                <span style="font-size: 1.35rem;"><?= $icono ?></span>
+                                <span style="color: var(--color-acento); display: flex; align-items: center;"><?= $iconoSvg ?></span>
                                 <span class="badge-tipo-chip"><?= e($esp->obtenerTipoLegible()) ?></span>
                             </div>
                             <strong style="font-size: 0.95rem; color: var(--color-secundario); margin-top: 0.25rem;">
@@ -264,7 +267,7 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
                     </div>
 
                     <div id="alertaHorarioInvalido" style="display: none; color: #dc2626; font-size: 0.8rem; background: #fef2f2; padding: 0.5rem 0.75rem; border-radius: 6px; border: 1px solid #fca5a5;">
-                        ⚠ La hora de fin debe ser posterior a la hora de inicio.
+                        La hora de fin debe ser posterior a la hora de inicio.
                     </div>
 
                     <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">
@@ -384,9 +387,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Actualizar badge pico
         if (esPico) {
-            resumenBadgePico.innerHTML = '<span class="badge-pico-smooth">⚡ Horario Pico</span>';
+            resumenBadgePico.innerHTML = '<span class="badge-pico-smooth">Horario Pico (+Recargo)</span>';
         } else {
-            resumenBadgePico.innerHTML = '<span class="badge-regular-smooth">🌿 Tarifa Regular</span>';
+            resumenBadgePico.innerHTML = '<span class="badge-regular-smooth">Tarifa Regular</span>';
         }
 
         resumenDuracion.textContent = `${horas.toFixed(horas % 1 === 0 ? 0 : 2)} hrs (${duracionMin} min)`;

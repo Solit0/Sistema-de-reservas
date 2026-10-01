@@ -57,9 +57,9 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
                     <label for="tipo">Tipo de Espacio *</label>
                     <select id="tipo" name="tipo" class="campo-control" required>
                         <option value="">-- Selecciona categoría --</option>
-                        <option value="sala" <?= ($antiguo['tipo'] ?? '') === 'sala' ? 'selected' : '' ?>>🏢 Sala de Reunión</option>
-                        <option value="cancha" <?= ($antiguo['tipo'] ?? '') === 'cancha' ? 'selected' : '' ?>>⚽ Cancha Deportiva</option>
-                        <option value="escritorio" <?= ($antiguo['tipo'] ?? '') === 'escritorio' ? 'selected' : '' ?>>💻 Escritorio Individual</option>
+                        <option value="sala" <?= ($antiguo['tipo'] ?? '') === 'sala' ? 'selected' : '' ?>>Sala de Reunión</option>
+                        <option value="cancha" <?= ($antiguo['tipo'] ?? '') === 'cancha' ? 'selected' : '' ?>>Cancha Deportiva</option>
+                        <option value="escritorio" <?= ($antiguo['tipo'] ?? '') === 'escritorio' ? 'selected' : '' ?>>Escritorio Individual</option>
                     </select>
                     <?php if (isset($errores['tipo'])): ?>
                         <div style="color: #dc2626; font-size: 0.8rem; margin-top: 0.25rem;"><?= e($errores['tipo']) ?></div>
@@ -108,7 +108,7 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
                     <div class="tarjeta-preset activa" data-preset="sala_ejecutiva.png" data-tipo="sala" style="border: 2px solid var(--color-acento); border-radius: 8px; overflow: hidden; cursor: pointer; background: #ffffff; transition: all 0.2s ease;">
                         <img src="/img/presets/sala_ejecutiva.png" alt="Sala Ejecutiva" style="width: 100%; height: 90px; object-fit: cover; display: block;">
                         <div style="padding: 0.5rem 0.65rem; font-size: 0.8rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
-                            <span>🏢 Sala Ejecutiva</span>
+                            <span>Sala Ejecutiva</span>
                             <span class="preset-check" style="color: var(--color-acento);">✓</span>
                         </div>
                     </div>
@@ -116,7 +116,7 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
                     <div class="tarjeta-preset" data-preset="cancha_sintetica.png" data-tipo="cancha" style="border: 2px solid var(--color-borde); border-radius: 8px; overflow: hidden; cursor: pointer; background: #ffffff; transition: all 0.2s ease;">
                         <img src="/img/presets/cancha_sintetica.png" alt="Cancha Sintética" style="width: 100%; height: 90px; object-fit: cover; display: block;">
                         <div style="padding: 0.5rem 0.65rem; font-size: 0.8rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
-                            <span>⚽ Cancha Sintética</span>
+                            <span>Cancha Sintética</span>
                             <span class="preset-check" style="display: none; color: var(--color-acento);">✓</span>
                         </div>
                     </div>
@@ -124,7 +124,7 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
                     <div class="tarjeta-preset" data-preset="escritorio_individual.png" data-tipo="escritorio" style="border: 2px solid var(--color-borde); border-radius: 8px; overflow: hidden; cursor: pointer; background: #ffffff; transition: all 0.2s ease;">
                         <img src="/img/presets/escritorio_individual.png" alt="Escritorio Individual" style="width: 100%; height: 90px; object-fit: cover; display: block;">
                         <div style="padding: 0.5rem 0.65rem; font-size: 0.8rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center;">
-                            <span>💻 Escritorio Cowork</span>
+                            <span>Escritorio Coworking</span>
                             <span class="preset-check" style="display: none; color: var(--color-acento);">✓</span>
                         </div>
                     </div>
@@ -138,7 +138,9 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
                     <input type="file" id="inputArchivoImagen" name="imagen" accept="image/jpeg,image/png,image/webp" style="display: none;">
                     
                     <div id="dropzoneContent">
-                        <div style="font-size: 2rem; margin-bottom: 0.35rem;">📷</div>
+                        <div style="color: #64748b; margin-bottom: 0.4rem; display: flex; justify-content: center;">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                        </div>
                         <div style="font-size: 0.95rem; font-weight: 600; color: var(--color-secundario);">
                             Arrastra una imagen aquí o <span style="color: var(--color-acento); text-decoration: underline;">haz clic para explorar</span>
                         </div>
@@ -155,7 +157,7 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
                             <span id="previewFileSize" style="font-size: 0.8rem; color: var(--color-texto-mutado);">1.2 MB</span>
                             <div style="margin-top: 0.35rem;">
                                 <button type="button" id="btnQuitarImagen" style="background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c; padding: 0.25rem 0.65rem; border-radius: 4px; font-size: 0.75rem; cursor: pointer; font-weight: 600;">
-                                    ✕ Quitar archivo y usar preset
+                                    &times; Quitar archivo y usar preset
                                 </button>
                             </div>
                         </div>

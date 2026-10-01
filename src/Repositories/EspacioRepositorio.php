@@ -108,4 +108,43 @@ final class EspacioRepositorio
 
         return $fila !== false ? $fila : null;
     }
+
+    /**
+     * [CRUD-CREATE] Inserta un nuevo espacio en la base de datos siguiendo Single Table Inheritance.
+     *
+     * @param array<string, mixed> $datos Datos del espacio a registrar.
+     *
+     * @return int ID autoincremental asignado por la base de datos.
+     */
+    public function insertar(array $datos): int
+    {
+        $sql = 'INSERT INTO espacios (
+            tipo, nombre, tarifa_base, capacidad, imagen,
+            tipo_grama, iluminacion_nocturna, tiene_computadora, tiene_proyector
+        ) VALUES (
+            :tipo, :nombre, :tarifa_base, :capacidad, :imagen,
+            :tipo_grama, :iluminacion_nocturna, :tiene_computadora, :tiene_proyector
+        )';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            ':tipo'                 => (string) ($datos['tipo'] ?? ''),
+            ':nombre'               => (string) ($datos['nombre'] ?? ''),
+            ':tarifa_base'          => (float) ($datos['tarifa_base'] ?? 0.0),
+            ':capacidad'            => (int) ($datos['capacidad'] ?? 0),
+            ':imagen'               => !empty($datos['imagen']) ? (string) $datos['imagen'] : null,
+            ':tipo_grama'           => !empty($datos['tipo_grama']) ? (string) $datos['tipo_grama'] : null,
+            ':iluminacion_nocturna' => isset($datos['iluminacion_nocturna']) && $datos['iluminacion_nocturna'] !== ''
+                ? (int) (bool) $datos['iluminacion_nocturna']
+                : null,
+            ':tiene_computadora'    => isset($datos['tiene_computadora']) && $datos['tiene_computadora'] !== ''
+                ? (int) (bool) $datos['tiene_computadora']
+                : null,
+            ':tiene_proyector'      => isset($datos['tiene_proyector']) && $datos['tiene_proyector'] !== ''
+                ? (int) (bool) $datos['tiene_proyector']
+                : null,
+        ]);
+
+        return (int) $this->pdo->lastInsertId();
+    }
 }

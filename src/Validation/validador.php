@@ -3,13 +3,30 @@
 declare(strict_types=1);
 
 namespace App\Validation;
+
 use DateTimeImmutable;
+
+/**
+ * [ENCAPSULAMIENTO]
+ * El arreglo interno de errores ($errores) se mantiene privado y solo se accede
+ * a través de métodos públicos como getErrores(), getError() y esValido().
+ *
+ * [CONCEPTO] Interfaz Fluida:
+ * Cada método de validación devuelve $this para permitir el encadenamiento
+ * de reglas ($v->requerido(...)->longitud(...)).
+ */
 class Validador
 {
-    /** @var array<string, string> Arreglo asociativo campo => mensaje */
+    /**
+     * [VALIDACION] Arreglo asociativo con los errores acumulados (campo => mensaje).
+     *
+     * @var array<string, string>
+     */
     private array $errores = [];
 
-
+    /**
+     * [VALIDACION] Valida que un campo no esté vacío (tras aplicar trim).
+     */
     public function requerido(string $campo, ?string $valor, string $mensaje = ''): self
     {
         if ($valor === null || trim((string) $valor) === '') {
@@ -21,6 +38,9 @@ class Validador
         return $this;
     }
 
+    /**
+     * [VALIDACION] Valida la longitud mínima y máxima de una cadena en caracteres UTF-8.
+     */
     public function longitud(string $campo, ?string $valor, int $min, int $max, string $mensaje = ''): self
     {
         if ($this->tieneError($campo) || $valor === null) {
@@ -37,6 +57,9 @@ class Validador
         return $this;
     }
 
+    /**
+     * [VALIDACION] Valida que el valor sea un número entero, con rango opcional.
+     */
     public function entero(string $campo, mixed $valor, ?int $min = null, ?int $max = null, string $mensaje = ''): self
     {
         if ($this->tieneError($campo) || $valor === null || $valor === '') {
@@ -64,6 +87,9 @@ class Validador
         return $this;
     }
 
+    /**
+     * [VALIDACION] Valida que el valor sea numérico / decimal positivo, con rango opcional.
+     */
     public function numero(string $campo, mixed $valor, ?float $min = null, ?float $max = null, string $mensaje = ''): self
     {
         if ($this->tieneError($campo) || $valor === null || $valor === '') {
@@ -86,7 +112,7 @@ class Validador
     }
 
     /**
-     * Valida que el valor pertenezca a una lista blanca de valores permitidos.
+     * [VALIDACION] Valida que el valor pertenezca a una lista blanca de valores permitidos.
      *
      * @param array<mixed> $permitidos
      */
@@ -105,7 +131,9 @@ class Validador
         return $this;
     }
 
-
+    /**
+     * [VALIDACION] Valida formato de correo electrónico.
+     */
     public function email(string $campo, ?string $valor, string $mensaje = ''): self
     {
         if ($this->tieneError($campo) || $valor === null || $valor === '') {
@@ -121,6 +149,9 @@ class Validador
         return $this;
     }
 
+    /**
+     * [VALIDACION] Valida formato de fecha calendario válido (por defecto Y-m-d).
+     */
     public function fecha(string $campo, ?string $valor, string $formato = 'Y-m-d', string $mensaje = ''): self
     {
         if ($this->tieneError($campo) || $valor === null || $valor === '') {
@@ -137,6 +168,9 @@ class Validador
         return $this;
     }
 
+    /**
+     * [VALIDACION] Valida formato de hora (por defecto H:i).
+     */
     public function hora(string $campo, ?string $valor, string $formato = 'H:i', string $mensaje = ''): self
     {
         if ($this->tieneError($campo) || $valor === null || $valor === '') {
@@ -153,6 +187,9 @@ class Validador
         return $this;
     }
 
+    /**
+     * [VALIDACION] Valida que la hora de fin sea estrictamente mayor a la hora de inicio.
+     */
     public function horaMayorQue(string $campoFin, ?string $horaFin, ?string $horaInicio, string $mensaje = ''): self
     {
         if ($this->tieneError($campoFin) || empty($horaFin) || empty($horaInicio)) {
@@ -168,6 +205,9 @@ class Validador
         return $this;
     }
 
+    /**
+     * [VALIDACION] Valida contra una expresión regular personalizada.
+     */
     public function regex(string $campo, ?string $valor, string $patron, string $mensaje = ''): self
     {
         if ($this->tieneError($campo) || $valor === null || $valor === '') {
@@ -183,6 +223,9 @@ class Validador
         return $this;
     }
 
+    /**
+     * [VALIDACION] Valida que dos valores sean idénticos.
+     */
     public function iguales(string $campo, mixed $a, mixed $b, string $mensaje = ''): self
     {
         if (!$this->tieneError($campo) && $a !== $b) {
@@ -194,7 +237,10 @@ class Validador
         return $this;
     }
 
-
+    /**
+     * [VALIDACION] Agrega un error asociativo de forma manual o interna.
+     * Solo conserva el primer error por campo para evitar saturación de mensajes.
+     */
     public function agregarError(string $campo, string $mensaje): self
     {
         if (!$this->tieneError($campo)) {

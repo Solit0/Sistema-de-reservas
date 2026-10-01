@@ -147,4 +147,47 @@ final class EspacioRepositorio
 
         return (int) $this->pdo->lastInsertId();
     }
+
+    /**
+     * [CRUD-UPDATE] Actualiza un espacio existente en la base de datos siguiendo Single Table Inheritance.
+     *
+     * @param int $id Identificador único del espacio a modificar.
+     * @param array<string, mixed> $datos Nuevos datos del espacio.
+     *
+     * @return bool True si la sentencia se ejecutó correctamente.
+     */
+    public function actualizar(int $id, array $datos): bool
+    {
+        $sql = 'UPDATE espacios SET
+            tipo = :tipo,
+            nombre = :nombre,
+            tarifa_base = :tarifa_base,
+            capacidad = :capacidad,
+            imagen = :imagen,
+            tipo_grama = :tipo_grama,
+            iluminacion_nocturna = :iluminacion_nocturna,
+            tiene_computadora = :tiene_computadora,
+            tiene_proyector = :tiene_proyector
+        WHERE id = :id';
+
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute([
+            ':id'                   => $id,
+            ':tipo'                 => (string) ($datos['tipo'] ?? ''),
+            ':nombre'               => (string) ($datos['nombre'] ?? ''),
+            ':tarifa_base'          => (float) ($datos['tarifa_base'] ?? 0.0),
+            ':capacidad'            => (int) ($datos['capacidad'] ?? 0),
+            ':imagen'               => !empty($datos['imagen']) ? (string) $datos['imagen'] : null,
+            ':tipo_grama'           => !empty($datos['tipo_grama']) ? (string) $datos['tipo_grama'] : null,
+            ':iluminacion_nocturna' => isset($datos['iluminacion_nocturna']) && $datos['iluminacion_nocturna'] !== ''
+                ? (int) (bool) $datos['iluminacion_nocturna']
+                : null,
+            ':tiene_computadora'    => isset($datos['tiene_computadora']) && $datos['tiene_computadora'] !== ''
+                ? (int) (bool) $datos['tiene_computadora']
+                : null,
+            ':tiene_proyector'      => isset($datos['tiene_proyector']) && $datos['tiene_proyector'] !== ''
+                ? (int) (bool) $datos['tiene_proyector']
+                : null,
+        ]);
+    }
 }

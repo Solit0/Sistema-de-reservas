@@ -10,7 +10,14 @@ declare(strict_types=1);
  * sincronizadas desde la base de datos o desde el archivo reservas.json.
  */
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require_once __DIR__ . '/../../vendor/autoload.php';
+
+use App\Database\Conexion;
+use App\Repositories\ReservaRepositorio;
 
 // [SEGURIDAD] Escape seguro contra XSS
 if (!function_exists('e')) {
@@ -20,21 +27,20 @@ if (!function_exists('e')) {
     }
 }
 
+$exito = $_SESSION['exito'] ?? null;
+unset($_SESSION['exito']);
+
 $reservas = [];
 $fuente = 'Persistencia JSON';
 
-// Estrategia 1: Carga desde MySQL si está disponible
-if (class_exists(\App\Database\Conexion::class) && file_exists(__DIR__ . '/../../config/config.php')) {
+// Estrategia 1: Carga desde MySQL usando ReservaRepositorio
+if (class_exists(Conexion::class) && file_exists(__DIR__ . '/../../config/config.php')) {
     try {
-        $pdo = \App\Database\Conexion::obtener();
-        $query = 'SELECT r.id, r.cliente, r.fecha, r.hora_inicio, r.hora_fin, r.monto_total, e.nombre AS espacio_nombre
-                  FROM reservas r
-                  JOIN espacios e ON r.espacio_id = e.id
-                  ORDER BY r.fecha DESC, r.hora_inicio ASC';
-        $stmt = $pdo->query($query);
-        if ($stmt) {
-            $reservas = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-            $fuente = 'Base de Datos (MySQL)';
+        $pdo = Conexion::obtener();
+        $repo = new ReservaRepositorio($pdo);
+        $reservas = $repo->listarTodas();
+        if (!empty($reservas)) {
+            $fuente = 'Base de Datos (MySQL / ReservaRepositorio)';
         }
     } catch (\Throwable) {
     }
@@ -118,6 +124,12 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
             </a>
         </div>
     </div>
+
+    <?php if ($exito !== null): ?>
+        <div style="background-color: #f0fdf4; border: 1px solid #86efac; color: #166534; padding: 0.85rem 1.25rem; border-radius: 6px; margin-bottom: 1.25rem;">
+            <strong>Éxito:</strong> <?= e($exito) ?>
+        </div>
+    <?php endif; ?>
 
     <article class="panel">
         <?php if (empty($reservas)): ?>

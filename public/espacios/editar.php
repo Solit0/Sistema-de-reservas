@@ -338,10 +338,19 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
             <div class="grupo-campo">
                 <label for="imagen">Fotografía / Imagen del Espacio (JPG, PNG o WEBP, máx. 2MB)</label>
                 
-                <?php if ($imagenActual !== null): 
-                    $rutaImgWeb = str_starts_with($imagenActual, 'http') || str_starts_with($imagenActual, '/')
-                        ? $imagenActual
-                        : '/uploads/' . $imagenActual;
+                <?php if ($imagenActual !== null && trim($imagenActual) !== ''): 
+                    $rutaLimpia = ltrim(trim($imagenActual), '/');
+                    if (str_starts_with($imagenActual, 'http') || str_starts_with($imagenActual, '/')) {
+                        $rutaImgWeb = $imagenActual;
+                    } elseif (file_exists(__DIR__ . '/../../public/' . $rutaLimpia)) {
+                        $rutaImgWeb = '/' . $rutaLimpia;
+                    } elseif (file_exists(__DIR__ . '/../../public/uploads/' . $rutaLimpia)) {
+                        $rutaImgWeb = '/uploads/' . $rutaLimpia;
+                    } elseif (file_exists(__DIR__ . '/../../public/img/presets/' . $rutaLimpia)) {
+                        $rutaImgWeb = '/img/presets/' . $rutaLimpia;
+                    } else {
+                        $rutaImgWeb = '/uploads/' . $rutaLimpia;
+                    }
                 ?>
                     <div class="miniatura-actual-card">
                         <img src="<?= e($rutaImgWeb) ?>" alt="Fotografía actual de <?= e($valorNombre) ?>">

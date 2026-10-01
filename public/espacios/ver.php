@@ -188,7 +188,7 @@ $tarifa4h     = $espacio->calcularTarifa(4);
 $tarifa2hPico = $espacio->calcularTarifa(2, true);
 
 // [POLIMORFISMO] Características particulares resueltas por delegación al objeto sin comprobación de tipos
-$caracteristicas = $espacio->obtenerCaracteristicas();
+$caracteristicas = $espacio->obtenerDetallesCompletos();
 
 // -----------------------------------------------------------------------------
 // 5. RESOLUCIÓN DE IMAGEN CON FALLBACK ESTÁTICO SEGURO
@@ -463,16 +463,18 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
         </div>
         <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
             <!-- [CRUD-UPDATE] Enlace al formulario de edición con precarga -->
-            <a href="editar.php?id=<?= e((string) $idSolicitado) ?>" class="btn btn-secundario" style="font-weight: 600; padding: 0.75rem 1.1rem;">
-                ✏️ Editar Espacio
+            <a href="editar.php?id=<?= e((string) $idSolicitado) ?>" class="btn btn-secundario" style="font-weight: 600; padding: 0.65rem 1.1rem; display: inline-flex; align-items: center; gap: 0.45rem;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                <span>Editar Espacio</span>
             </a>
 
             <!-- [CRUD-DELETE] Formulario de borrado seguro estrictamente por POST con CSRF -->
             <form action="eliminar.php" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar permanentemente este espacio? Esta acción no se puede deshacer.');" style="display: inline; margin: 0;">
                 <?= Csrf::campoHtml() ?>
                 <input type="hidden" name="id" value="<?= e((string) $idSolicitado) ?>">
-                <button type="submit" class="btn btn-peligro" style="font-weight: 600; padding: 0.75rem 1.1rem;">
-                    🗑️ Eliminar
+                <button type="submit" class="btn btn-peligro" style="font-weight: 600; padding: 0.65rem 1.1rem; display: inline-flex; align-items: center; gap: 0.45rem;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                    <span>Eliminar</span>
                 </button>
             </form>
 
@@ -576,11 +578,11 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
             <!-- Panel de Cálculo de Tarifas Polimórficas -->
             <article class="panel" style="margin-bottom: 1.5rem;">
                 <header class="panel-header">
-                    <h3>Tarifas Calculadas (Polimorfismo)</h3>
+                    <h3>Esquema de Tarifas</h3>
                 </header>
                 <div class="panel-cuerpo">
                     <p style="font-size: 0.875rem; color: var(--color-texto-mutado); margin-bottom: 1rem;">
-                        Cálculo en tiempo de ejecución invocando <code>$espacio-&gt;calcularTarifa()</code> de acuerdo al modelo de negocio:
+                        Estimación de costos según duración y franja horaria:
                     </p>
 
                     <div class="tabla-responsive">

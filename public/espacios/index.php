@@ -110,12 +110,12 @@ if (empty($espacios)) {
     // Estrategia 3: Dataset de demostración inicial con objetos polimórficos
     if (empty($espacios)) {
         $espacios = [
-            new Cancha('Cancha Central Sintética', 10),
-            new Cancha('Cancha Norte Grama Natural', 10),
-            new SalaReunion('Sala de Juntas Principal', 8),
-            new SalaReunion('Sala Ejecutiva de Conferencias', 12),
-            new EscritorioIndividual('Escritorio Individual 01', 1),
-            new EscritorioIndividual('Escritorio Individual 02', 1),
+            new Cancha('Cancha Central Sintética', 10, 'cancha_sintetica.png', 1),
+            new Cancha('Cancha Norte Grama Natural', 10, 'cancha_sintetica.png', 2),
+            new SalaReunion('Sala de Juntas Principal', 8, 'sala_ejecutiva.png', 3),
+            new SalaReunion('Sala Ejecutiva de Conferencias', 12, 'sala_ejecutiva.png', 4),
+            new EscritorioIndividual('Escritorio Individual 01', 1, 'escritorio_individual.png', 5),
+            new EscritorioIndividual('Escritorio Individual 02', 1, 'escritorio_individual.png', 6),
         ];
     }
 }
@@ -286,8 +286,9 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
                     <!-- [SEGURIDAD] Sanitización de salida contra vectores XSS -->
                     Total de Espacios: <strong><?= e((string) count($espacios)) ?></strong>
                 </span>
-                <a href="crear.php" class="btn btn-acento" style="margin-left: 0.5rem;">
-                    Nuevo Espacio
+                <a href="crear.php" class="btn btn-acento" style="display: inline-flex; align-items: center; gap: 0.45rem; margin-left: 0.5rem; font-weight: 600;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    <span>Nuevo Espacio</span>
                 </a>
             </div>
         </div>

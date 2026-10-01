@@ -18,9 +18,9 @@ USE sistema_reservas;
 INSERT INTO espacios
     (tipo, nombre, tarifa_base, capacidad, imagen, tipo_grama, iluminacion_nocturna, tiene_computadora, tiene_proyector)
 VALUES
-    ('cancha', 'Cancha Central', 120.00, 10, NULL, 'Sintética', 1, NULL, NULL),
-    ('cancha', 'Cancha Norte', 120.00, 10, NULL, 'Natural', 0, NULL, NULL),
-    ('cancha', 'Cancha Este', 120.00, 10, NULL, 'Sintética', 1, NULL, NULL);
+    ('cancha', 'Cancha Central', 120.00, 10, 'cancha_sintetica.png', 'Sintética', 1, NULL, NULL),
+    ('cancha', 'Cancha Norte', 120.00, 10, 'cancha_sintetica.png', 'Natural', 0, NULL, NULL),
+    ('cancha', 'Cancha Este', 120.00, 10, 'cancha_sintetica.png', 'Sintética', 1, NULL, NULL);
 
 -- -----------------------------------------------------------------------------
 -- Escritorios individuales (tipo = 'escritorio')
@@ -28,9 +28,9 @@ VALUES
 INSERT INTO espacios
     (tipo, nombre, tarifa_base, capacidad, imagen, tipo_grama, iluminacion_nocturna, tiene_computadora, tiene_proyector)
 VALUES
-    ('escritorio', 'Escritorio 01', 75.00, 1, NULL, NULL, NULL, 1, NULL),
-    ('escritorio', 'Escritorio 02', 75.00, 1, NULL, NULL, NULL, 0, NULL),
-    ('escritorio', 'Escritorio 03', 75.00, 1, NULL, NULL, NULL, 1, NULL);
+    ('escritorio', 'Escritorio 01', 75.00, 1, 'escritorio_individual.png', NULL, NULL, 1, NULL),
+    ('escritorio', 'Escritorio 02', 75.00, 1, 'escritorio_individual.png', NULL, NULL, 0, NULL),
+    ('escritorio', 'Escritorio 03', 75.00, 1, 'escritorio_individual.png', NULL, NULL, 1, NULL);
 
 -- -----------------------------------------------------------------------------
 -- Salas de reunión (tipo = 'sala')
@@ -38,6 +38,6 @@ VALUES
 INSERT INTO espacios
     (tipo, nombre, tarifa_base, capacidad, imagen, tipo_grama, iluminacion_nocturna, tiene_computadora, tiene_proyector)
 VALUES
-    ('sala', 'Sala de Reuniones A', 180.00, 8, NULL, NULL, NULL, NULL, 1),
-    ('sala', 'Sala de Reuniones B', 180.00, 8, NULL, NULL, NULL, NULL, 0),
-    ('sala', 'Sala de Reuniones C', 180.00, 8, NULL, NULL, NULL, NULL, 1);
+    ('sala', 'Sala de Reuniones A', 180.00, 8, 'sala_ejecutiva.png', NULL, NULL, NULL, 1),
+    ('sala', 'Sala de Reuniones B', 180.00, 8, 'sala_ejecutiva.png', NULL, NULL, NULL, 0),
+    ('sala', 'Sala de Reuniones C', 180.00, 8, 'sala_ejecutiva.png', NULL, NULL, NULL, 1);

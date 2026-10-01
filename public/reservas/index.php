@@ -83,8 +83,9 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
             </p>
         </div>
         <div>
-            <a href="/reservas/crear.php" class="btn btn-acento" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.55rem 1rem; font-weight: 600;">
-                <span>+</span> Nueva Reserva
+            <a href="/reservas/crear.php" class="btn btn-acento" style="display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.55rem 1rem; font-weight: 600;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>Nueva Reserva</span>
             </a>
         </div>
     </div>

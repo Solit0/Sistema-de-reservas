@@ -121,6 +121,17 @@ abstract class Espacio implements Reservable
     abstract public function obtenerCaracteristicas(): array;
 
     /**
+     * [POLIMORFISMO] Ficha técnica: imprime y expone las características y detalles
+     * propios de la subclase sin utilizar condicionales ni comprobación de tipos.
+     *
+     * @return array<string, string>
+     */
+    public function obtenerDetallesCompletos(): array
+    {
+        return $this->obtenerCaracteristicas();
+    }
+
+    /**
      * Retorna una descripción informativa del espacio.
      */
     public function obtenerDescripcion(): string

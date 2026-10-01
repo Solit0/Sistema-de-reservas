@@ -101,4 +101,31 @@ final class GestorImagenes
     {
         return $this->directorioUploads;
     }
+
+    /**
+     * [SEGURIDAD] Elimina un archivo físico del directorio de uploads asegurando que no exista Path Traversal.
+     *
+     * @param string|null $nombreArchivo Nombre base del archivo (sin ruta).
+     * @return bool True si se eliminó exitosamente, false si no existía o no se pudo eliminar.
+     */
+    public function eliminarImagen(?string $nombreArchivo): bool
+    {
+        if ($nombreArchivo === null || trim($nombreArchivo) === '') {
+            return false;
+        }
+
+        // Sanitización contra Directory Traversal
+        $nombreLimpio = basename($nombreArchivo);
+        if ($nombreLimpio === '' || $nombreLimpio === '.' || $nombreLimpio === '..') {
+            return false;
+        }
+
+        $rutaCompleta = rtrim($this->directorioUploads, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $nombreLimpio;
+
+        if (file_exists($rutaCompleta) && is_file($rutaCompleta)) {
+            return unlink($rutaCompleta);
+        }
+
+        return false;
+    }
 }

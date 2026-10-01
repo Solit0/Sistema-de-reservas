@@ -7,10 +7,14 @@ declare(strict_types=1);
  * Sistema de Reservas - Listado General de Reservas Activas
  * ==============================================================================
  * Vista del módulo de reservas. Muestra las reservas registradas en el sistema
- * sincronizadas desde la base de datos o desde el archivo reservas.json.
+ * sincronizadas mediante ReservaRepositorio desde la base de datos o fallback JSON.
  */
 
 require_once __DIR__ . '/../../vendor/autoload.php';
+
+use App\Database\Conexion;
+use App\Repositories\ReservaRepositorio;
+use App\Services\ReservaStorageService;
 
 // [SEGURIDAD] Escape seguro contra XSS
 if (!function_exists('e')) {
@@ -23,29 +27,25 @@ if (!function_exists('e')) {
 $reservas = [];
 $fuente = 'Persistencia JSON';
 
-// Estrategia 1: Carga desde MySQL si está disponible
-if (class_exists(\App\Database\Conexion::class) && file_exists(__DIR__ . '/../../config/config.php')) {
+// Estrategia 1: Carga desde MySQL mediante ReservaRepositorio
+if (class_exists(Conexion::class) && file_exists(__DIR__ . '/../../config/config.php')) {
     try {
-        $pdo = \App\Database\Conexion::obtener();
-        $query = 'SELECT r.id, r.cliente, r.fecha, r.hora_inicio, r.hora_fin, r.monto_total, e.nombre AS espacio_nombre
-                  FROM reservas r
-                  JOIN espacios e ON r.espacio_id = e.id
-                  ORDER BY r.fecha DESC, r.hora_inicio ASC';
-        $stmt = $pdo->query($query);
-        if ($stmt) {
-            $reservas = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $pdo = Conexion::obtener();
+        $reservaRepo = new ReservaRepositorio($pdo);
+        $reservas = $reservaRepo->listarTodas();
+        if (!empty($reservas)) {
             $fuente = 'Base de Datos (MySQL)';
         }
     } catch (\Throwable) {
     }
 }
 
-// Estrategia 2: Carga desde persistencia JSON
+// Estrategia 2: Fallback a persistencia JSON
 if (empty($reservas)) {
     $rutaJson = __DIR__ . '/../../reservas.json';
     if (file_exists($rutaJson)) {
         try {
-            $storage = new \App\Services\ReservaStorageService();
+            $storage = new ReservaStorageService();
             $datosJson = $storage->leerDeJson($rutaJson);
             foreach ($datosJson as $esp) {
                 $nombreEspacio = $esp['espacio'] ?? 'Espacio';
@@ -144,6 +144,10 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
                     </thead>
                     <tbody>
                         <?php foreach ($reservas as $reserva): ?>
+                            <?php
+                                $horaH = (int)substr((string)$reserva['hora_inicio'], 0, 2);
+                                $esPico = !empty($reserva['es_pico']) || ($horaH >= 14 && $horaH < 19);
+                            ?>
                             <tr>
                                 <td>
                                     <!-- [SEGURIDAD] Sanitización de salida contra vectores XSS -->
@@ -158,7 +162,7 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
                                     <?= e((string) $reserva['hora_inicio']) ?> - <?= e((string) $reserva['hora_fin']) ?>
                                 </td>
                                 <td>
-                                    <?php if (!empty($reserva['es_pico'])): ?>
+                                    <?php if ($esPico): ?>
                                         <span class="badge-pico">Horario Pico (+Recargo)</span>
                                     <?php else: ?>
                                         <span class="badge-regular">Regular</span>

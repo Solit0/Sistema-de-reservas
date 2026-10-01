@@ -8,10 +8,13 @@
     "autoload": {
         "psr-4": {
             "App\\": "src/"
-        }
+        },
+        "files": [
+            "src/Validation/validador.php"
+        ]
     },
     "scripts": {
-        "test": "php tests/ReservasTest.php",
+        "test": "php tests/ReservasTest.php && php tests/ValidadorTest.php",
         "start": "php main.php"
     }
 }

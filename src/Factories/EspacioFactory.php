@@ -74,10 +74,22 @@ final class EspacioFactory
         // La imagen vacía se normaliza a null.
         $imagen = $imagen !== '' ? $imagen : null;
 
+        // Mapeo seguro de columnas específicas del esquema Single Table Inheritance
+        $tipoGrama = isset($fila['tipo_grama']) && $fila['tipo_grama'] !== '' ? (string) $fila['tipo_grama'] : null;
+        $iluminacionNocturna = isset($fila['iluminacion_nocturna']) && $fila['iluminacion_nocturna'] !== null && $fila['iluminacion_nocturna'] !== ''
+            ? (bool) $fila['iluminacion_nocturna']
+            : null;
+        $tieneComputadora = isset($fila['tiene_computadora']) && $fila['tiene_computadora'] !== null && $fila['tiene_computadora'] !== ''
+            ? (bool) $fila['tiene_computadora']
+            : null;
+        $tieneProyector = isset($fila['tiene_proyector']) && $fila['tiene_proyector'] !== null && $fila['tiene_proyector'] !== ''
+            ? (bool) $fila['tiene_proyector']
+            : null;
+
         return match ($tipo) {
-            'cancha' => new Cancha($nombre, $capacidad, $imagen, $id),
-            'escritorio' => new EscritorioIndividual($nombre, $capacidad, $imagen, $id),
-            'sala' => new SalaReunion($nombre, $capacidad, $imagen, $id),
+            'cancha'     => new Cancha($nombre, $capacidad, $imagen, $id, $tipoGrama, $iluminacionNocturna),
+            'escritorio' => new EscritorioIndividual($nombre, $capacidad, $imagen, $id, $tieneComputadora),
+            'sala'       => new SalaReunion($nombre, $capacidad, $imagen, $id, $tieneProyector),
         };
     }
 

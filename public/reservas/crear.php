@@ -70,7 +70,9 @@ if (empty($espacios)) {
     ];
 }
 
-$espacioSeleccionadoId = (int)($antiguo['espacio_id'] ?? ($espacios[0]?->getId() ?? 1));
+$espacioGet = filter_input(INPUT_GET, 'espacio_id', FILTER_VALIDATE_INT)
+    ?? (isset($_GET['espacio_id']) ? filter_var($_GET['espacio_id'], FILTER_VALIDATE_INT) : null);
+$espacioSeleccionadoId = (int)($antiguo['espacio_id'] ?? ($espacioGet ?: ($espacios[0]?->getId() ?? 1)));
 
 $tituloPagina = 'Nueva Reserva';
 require_once __DIR__ . '/../../views/layout/encabezado.php';

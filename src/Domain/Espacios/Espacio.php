@@ -16,11 +16,12 @@ abstract class Espacio implements Reservable
     protected readonly int $id;
     protected string $nombre;
     protected int $capacidad;
+    protected ?string $imagen = null;
 
     /** @var Reserva[] */
     private array $reservas = [];
 
-    public function __construct(string $nombre, int $capacidad)
+    public function __construct(string $nombre, int $capacidad, ?string $imagen = null)
     {
         if (trim($nombre) === '') {
             throw new InvalidArgumentException('El nombre del espacio no puede estar vacío.');
@@ -34,6 +35,7 @@ abstract class Espacio implements Reservable
         $this->id = self::$contador;
         $this->nombre = $nombre;
         $this->capacidad = $capacidad;
+        $this->imagen = $imagen;
     }
 
     public function getId(): int
@@ -44,6 +46,21 @@ abstract class Espacio implements Reservable
     public function getNombre(): string
     {
         return $this->nombre;
+    }
+
+    public function getImagen(): ?string
+    {
+        return $this->imagen;
+    }
+
+    public function setImagen(?string $imagen): void
+    {
+        $this->imagen = $imagen;
+    }
+
+    public function obtenerTipoLegible(): string
+    {
+        return $this->getTipo();
     }
 
     public function getCapacidad(): int

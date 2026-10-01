@@ -11,9 +11,9 @@ final class Cancha extends Espacio
     private const PRECIO_POR_BLOQUE = 120.0;
     private const RECARGO_PICO_POR_BLOQUE = 35.0;
 
-    public function __construct(string $nombre, int $capacidad = 10)
+    public function __construct(string $nombre, int $capacidad = 10, ?string $imagen = null)
     {
-        parent::__construct($nombre, $capacidad);
+        parent::__construct($nombre, $capacidad, $imagen);
     }
 
     public function getTipo(): string
@@ -21,9 +21,18 @@ final class Cancha extends Espacio
         return 'Cancha';
     }
 
-    public function calcularTarifa(Horario $horario, bool $esPico = false): float
+    public function obtenerTipoLegible(): string
     {
-        $bloques = (int) ceil($horario->obtenerDuracionEnMinutos() / 60.0);
+        return 'Cancha';
+    }
+
+    public function calcularTarifa(Horario|int|float $horario, bool $esPico = false): float
+    {
+        if ($horario instanceof Horario) {
+            $bloques = (int) ceil($horario->obtenerDuracionEnMinutos() / 60.0);
+        } else {
+            $bloques = (int) ceil((float) $horario);
+        }
         $total = $bloques * self::PRECIO_POR_BLOQUE;
 
         if ($esPico) {

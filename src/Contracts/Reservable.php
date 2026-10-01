@@ -11,7 +11,7 @@ interface Reservable
 {
     public function verificarDisponibilidad(Horario $horario): bool;
 
-    public function calcularTarifa(Horario $horario, bool $esPico = false): float;
+    public function calcularTarifa(Horario|int|float $horario, bool $esPico = false): float;
 
     public function agregarReserva(Reserva $reserva): void;
 
@@ -24,6 +24,10 @@ interface Reservable
 
     public function getTipo(): string;
 
+    public function obtenerTipoLegible(): string;
+
     public function getCapacidad(): int;
+
+    public function getImagen(): ?string;
 }
 

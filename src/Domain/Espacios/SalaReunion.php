@@ -11,9 +11,9 @@ final class SalaReunion extends Espacio
     private const PRECIO_POR_HORA = 180.0;
     private const RECARGO_PICO = 0.25;
 
-    public function __construct(string $nombre, int $capacidad = 8)
+    public function __construct(string $nombre, int $capacidad = 8, ?string $imagen = null)
     {
-        parent::__construct($nombre, $capacidad);
+        parent::__construct($nombre, $capacidad, $imagen);
     }
 
     public function getTipo(): string
@@ -21,9 +21,14 @@ final class SalaReunion extends Espacio
         return 'Sala de Reunión';
     }
 
-    public function calcularTarifa(Horario $horario, bool $esPico = false): float
+    public function obtenerTipoLegible(): string
     {
-        $horas = $horario->obtenerDuracionEnHoras();
+        return 'Sala de Reunión';
+    }
+
+    public function calcularTarifa(Horario|int|float $horario, bool $esPico = false): float
+    {
+        $horas = $horario instanceof Horario ? $horario->obtenerDuracionEnHoras() : (float) $horario;
         $tarifa = $horas * self::PRECIO_POR_HORA;
 
         if ($esPico) {

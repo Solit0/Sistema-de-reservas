@@ -10,11 +10,11 @@
             "App\\": "src/"
         },
         "files": [
-            "src/Validation/validador.php"
+            "src/Validation/Validador.php"
         ]
     },
     "scripts": {
-        "test": "php tests/ReservasTest.php && php tests/ValidadorTest.php && php tests/CsrfTest.php && php tests/GestorImagenesTest.php && php tests/CrearEspacioIntegrationTest.php",
+        "test": "php tests/ReservasTest.php && php tests/ValidadorTest.php && php tests/CsrfTest.php && php tests/GestorImagenesTest.php && php tests/ReservaRepositorioTest.php && php tests/CrearEspacioIntegrationTest.php",
         "start": "php main.php"
     }
 }

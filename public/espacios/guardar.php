@@ -8,8 +8,8 @@ declare(strict_types=1);
  * ==============================================================================
  * Procesa la creación de un nuevo espacio aplicando el patrón PRG
  * (Post/Redirect/Get), verificación estricta de CSRF, validación en servidor
- * con la clase Validador, procesamiento seguro de imagen con GestorImagenes y
- * persistencia relacional con EspacioRepositorio.
+ * con la clase Validador, procesamiento seguro de imagen con GestorImagenes,
+ * persistencia relacional con EspacioRepositorio y fallback a JSON.
  */
 
 require_once __DIR__ . '/../../vendor/autoload.php';
@@ -18,6 +18,7 @@ use App\Database\Conexion;
 use App\Repositories\EspacioRepositorio;
 use App\Security\Csrf;
 use App\Services\GestorImagenes;
+use App\Services\ReservaStorageService;
 use App\Validation\Validador;
 
 // Iniciar sesión si aún no está activa
@@ -47,6 +48,7 @@ $nombre = isset($_POST['nombre']) ? trim((string) $_POST['nombre']) : '';
 $tipo = isset($_POST['tipo']) ? trim((string) $_POST['tipo']) : '';
 $capacidad = isset($_POST['capacidad']) ? trim((string) $_POST['capacidad']) : '';
 $tarifaBase = isset($_POST['tarifa_base']) ? trim((string) $_POST['tarifa_base']) : '';
+$presetImagen = isset($_POST['preset_imagen']) ? trim((string) $_POST['preset_imagen']) : '';
 
 // Campos específicos de subclases (Single Table Inheritance)
 $tipoGrama = isset($_POST['tipo_grama']) ? trim((string) $_POST['tipo_grama']) : '';
@@ -83,39 +85,81 @@ if ($errorImagen !== null) {
 if (!$validador->esValido()) {
     $_SESSION['errores'] = $validador->getErrores();
     $_SESSION['old'] = $_POST;
+    $_SESSION['antiguo'] = $_POST;
     header('Location: /espacios/crear.php');
     exit;
 }
 
-// 6. Subida segura de imagen y persistencia en la base de datos
+// 6. Subida segura de imagen y persistencia
 $nombreArchivoImagen = null;
+
 try {
+    // Si se subió un archivo físico
     if ($archivoImagen !== null && isset($archivoImagen['error']) && $archivoImagen['error'] === UPLOAD_ERR_OK) {
         $nombreArchivoImagen = $gestorImagenes->subir($archivoImagen);
+    } elseif ($presetImagen !== '') {
+        // Soporte de imagen predefinida seleccionada (preset)
+        $nombrePresetLimpio = basename($presetImagen);
+        $rutaPresetOrigen = dirname(__DIR__, 2) . '/public/img/presets/' . $nombrePresetLimpio;
+        if (file_exists($rutaPresetOrigen)) {
+            $nombreFinal = 'preset_' . bin2hex(random_bytes(6)) . '_' . $nombrePresetLimpio;
+            $rutaDestino = dirname(__DIR__, 2) . '/public/uploads/' . $nombreFinal;
+            if (copy($rutaPresetOrigen, $rutaDestino)) {
+                $nombreArchivoImagen = $nombreFinal;
+            }
+        }
     }
 
-    $pdo = Conexion::obtener();
-    $repositorio = new EspacioRepositorio($pdo);
+    $guardado = false;
 
-    $datosEspacio = [
-        'tipo'                 => $tipo,
-        'nombre'               => $nombre,
-        'tarifa_base'          => (float) $tarifaBase,
-        'capacidad'            => (int) $capacidad,
-        'imagen'               => $nombreArchivoImagen,
-        'tipo_grama'           => $tipo === 'cancha' && $tipoGrama !== '' ? $tipoGrama : null,
-        'iluminacion_nocturna' => $tipo === 'cancha' ? $iluminacionNocturna : null,
-        'tiene_computadora'    => $tipo === 'escritorio' ? $tieneComputadora : null,
-        'tiene_proyector'      => $tipo === 'sala' ? $tieneProyector : null,
-    ];
+    // Estrategia 1: Persistencia relacional en MySQL mediante EspacioRepositorio
+    if (class_exists(Conexion::class) && file_exists(__DIR__ . '/../../config/config.php')) {
+        try {
+            $pdo = Conexion::obtener();
+            $repositorio = new EspacioRepositorio($pdo);
 
-    $repositorio->insertar($datosEspacio);
+            $datosEspacio = [
+                'tipo'                 => $tipo,
+                'nombre'               => $nombre,
+                'tarifa_base'          => (float) $tarifaBase,
+                'capacidad'            => (int) $capacidad,
+                'imagen'               => $nombreArchivoImagen,
+                'tipo_grama'           => $tipo === 'cancha' && $tipoGrama !== '' ? $tipoGrama : null,
+                'iluminacion_nocturna' => $tipo === 'cancha' ? $iluminacionNocturna : null,
+                'tiene_computadora'    => $tipo === 'escritorio' ? $tieneComputadora : null,
+                'tiene_proyector'      => $tipo === 'sala' ? $tieneProyector : null,
+            ];
 
-    $_SESSION['flash'] = sprintf('El espacio "%s" fue registrado exitosamente.', $nombre);
+            $repositorio->insertar($datosEspacio);
+            $guardado = true;
+        } catch (\Throwable) {
+            // Si falla la base de datos relacional, se procede al fallback JSON
+        }
+    }
+
+    // Estrategia 2: Fallback resiliente a persistencia JSON (reservas.json)
+    if (!$guardado) {
+        $rutaJson = __DIR__ . '/../../reservas.json';
+        $storage = new ReservaStorageService();
+        $datos = file_exists($rutaJson) ? $storage->leerDeJson($rutaJson) : [];
+        $datos[] = [
+            'espacio'        => $nombre,
+            'tipo'           => $tipo,
+            'capacidad'      => (int) $capacidad,
+            'imagen'         => $nombreArchivoImagen,
+            'tarifa_base'    => (float) $tarifaBase,
+            'total_reservas' => 0,
+            'reservas'       => [],
+        ];
+        file_put_contents($rutaJson, json_encode($datos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+    }
+
+    unset($_SESSION['antiguo'], $_SESSION['old'], $_SESSION['errores']);
+    $_SESSION['flash'] = sprintf('¡Espacio "%s" registrado con éxito!', $nombre);
+
     header('Location: /espacios/index.php');
     exit;
 } catch (\Throwable $e) {
-    // Si la imagen fue subida pero falló la BD, asegurar eliminación física
     if ($nombreArchivoImagen !== null) {
         $gestorImagenes->eliminar($nombreArchivoImagen);
     }
@@ -124,6 +168,7 @@ try {
         'general' => 'Ocurrió un error al persistir el espacio: ' . $e->getMessage()
     ];
     $_SESSION['old'] = $_POST;
+    $_SESSION['antiguo'] = $_POST;
     header('Location: /espacios/crear.php');
     exit;
 }

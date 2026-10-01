@@ -235,7 +235,9 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
             <!-- Acciones del Formulario -->
             <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1rem;">
                 <a href="/espacios/index.php" class="btn btn-secundario">Cancelar</a>
-                <button type="submit" class="btn btn-acento">Guardar Espacio</button>
+                <button type="submit" class="btn btn-acento" style="padding: 0.65rem 1.5rem; font-weight: 700;">
+                    Guardar Espacio &rarr;
+                </button>
             </div>
         </form>
     </article>

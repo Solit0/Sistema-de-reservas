@@ -15,7 +15,7 @@ use RuntimeException;
  * - Valida tipos MIME en el servidor mediante Fileinfo (no confía en la extensión del cliente).
  * - Renombra los archivos con hashes aleatorios para evitar colisiones y Path Traversal.
  * - Limita el tamaño máximo de los archivos subidos.
- * - Garantiza la eliminación física de archivos antiguos.
+ * - Garantiza la eliminación física segura de archivos en disco.
  */
 class GestorImagenes
 {
@@ -25,16 +25,16 @@ class GestorImagenes
         'image/webp' => 'webp',
     ];
 
-    private const TAMANO_MAXIMO_BYTES = 2097152; // 2 MB (2 * 1024 * 1024)
+    private const MAX_SIZE_BYTES = 3145728; // 3 MB (3 * 1024 * 1024)
 
-    private string $directorioDestino;
+    private string $directorioUploads;
 
-    public function __construct(?string $directorioDestino = null)
+    public function __construct(?string $directorioUploads = null)
     {
-        $this->directorioDestino = $directorioDestino ?? dirname(__DIR__, 2) . '/public/uploads';
+        $this->directorioUploads = $directorioUploads ?? dirname(__DIR__, 2) . '/public/uploads';
 
-        if (!is_dir($this->directorioDestino)) {
-            mkdir($this->directorioDestino, 0755, true);
+        if (!is_dir($this->directorioUploads) && !mkdir($this->directorioUploads, 0755, true) && !is_dir($this->directorioUploads)) {
+            throw new RuntimeException(sprintf('No se pudo crear el directorio de subidas: "%s"', $this->directorioUploads));
         }
     }
 
@@ -52,11 +52,11 @@ class GestorImagenes
         }
 
         if ($archivo['error'] !== UPLOAD_ERR_OK) {
-            return 'Ocurrió un error al subir el archivo (código ' . $archivo['error'] . ').';
+            return sprintf('Error en la subida del archivo (código: %d).', (int) $archivo['error']);
         }
 
-        if (($archivo['size'] ?? 0) > self::TAMANO_MAXIMO_BYTES) {
-            return 'La imagen no puede exceder los 2 MB de tamaño.';
+        if (($archivo['size'] ?? 0) > self::MAX_SIZE_BYTES) {
+            return sprintf('El archivo supera el tamaño máximo permitido de %d MB.', self::MAX_SIZE_BYTES / (1024 * 1024));
         }
 
         $tmpPath = (string) ($archivo['tmp_name'] ?? '');
@@ -68,7 +68,10 @@ class GestorImagenes
         $mime = $finfo->file($tmpPath);
 
         if (!is_string($mime) || !array_key_exists($mime, self::TIPOS_PERMITIDOS)) {
-            return 'Formato de imagen no permitido. Solo se aceptan imágenes JPG, PNG y WEBP.';
+            return sprintf(
+                'Formato de imagen no permitido (%s). Solo se aceptan formatos JPEG, PNG y WEBP.',
+                is_string($mime) ? $mime : 'desconocido'
+            );
         }
 
         return null;
@@ -91,7 +94,7 @@ class GestorImagenes
             throw new InvalidArgumentException($error);
         }
 
-        if ($archivo === null || !isset($archivo['tmp_name']) || $archivo['error'] === UPLOAD_ERR_NO_FILE) {
+        if ($archivo === null || !isset($archivo['tmp_name']) || ($archivo['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) {
             return null;
         }
 
@@ -100,28 +103,80 @@ class GestorImagenes
         $mime = (string) $finfo->file($tmpPath);
         $extension = self::TIPOS_PERMITIDOS[$mime] ?? 'jpg';
 
-        // Generar nombre aleatorio de 32 caracteres hexadecimales + extensión segura
-        $nombreSeguro = bin2hex(random_bytes(16)) . '.' . $extension;
-        $rutaDestino = $this->directorioDestino . '/' . $nombreSeguro;
+        $nombreFinal = bin2hex(random_bytes(16)) . '.' . $extension;
+        $destino = rtrim($this->directorioUploads, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $nombreFinal;
 
-        // Soporta tanto subidas HTTP reales (is_uploaded_file) como pruebas automatizadas
+        // Soporta tanto subidas HTTP reales (is_uploaded_file) como tests locales
         $guardado = is_uploaded_file($tmpPath)
-            ? move_uploaded_file($tmpPath, $rutaDestino)
-            : copy($tmpPath, $rutaDestino);
+            ? move_uploaded_file($tmpPath, $destino)
+            : copy($tmpPath, $destino);
 
         if (!$guardado) {
-            throw new RuntimeException('No se pudo guardar la imagen en el directorio de destino.');
+            throw new RuntimeException('Error al mover la imagen subida al directorio de almacenamiento público.');
         }
 
-        return $nombreSeguro;
+        return $nombreFinal;
     }
 
     /**
-     * Elimina físicamente una imagen anterior del disco.
+     * Procesa la subida obligatoria de un archivo, lanzando excepción si no se envió o es inválido.
      *
-     * @param string|null $nombreArchivo Nombre del archivo en public/uploads/.
+     * @param array<string, mixed> $archivo
      *
-     * @return bool True si se eliminó o no existía, false si falló unlink.
+     * @return string Nombre del archivo guardado.
+     *
+     * @throws InvalidArgumentException
+     * @throws RuntimeException
+     */
+    public function procesarSubida(array $archivo): string
+    {
+        $error = $archivo['error'] ?? UPLOAD_ERR_NO_FILE;
+
+        if ($error === UPLOAD_ERR_NO_FILE) {
+            throw new InvalidArgumentException('No se seleccionó ningún archivo para subir.');
+        }
+
+        $subido = $this->subir($archivo);
+        if ($subido === null) {
+            throw new InvalidArgumentException('No se pudo procesar la subida del archivo.');
+        }
+
+        return $subido;
+    }
+
+    /**
+     * Elimina físicamente una imagen del directorio de uploads.
+     *
+     * @param string|null $nombreArchivo
+     *
+     * @return bool True si el archivo existía y fue eliminado, false en caso contrario.
+     */
+    public function eliminarImagen(?string $nombreArchivo): bool
+    {
+        if ($nombreArchivo === null || trim($nombreArchivo) === '') {
+            return false;
+        }
+
+        $nombreLimpio = basename($nombreArchivo);
+        if ($nombreLimpio === '' || $nombreLimpio === '.' || $nombreLimpio === '..') {
+            return false;
+        }
+
+        $rutaCompleta = rtrim($this->directorioUploads, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $nombreLimpio;
+
+        if (file_exists($rutaCompleta) && is_file($rutaCompleta)) {
+            return unlink($rutaCompleta);
+        }
+
+        return false;
+    }
+
+    /**
+     * Alias de eliminación segura.
+     *
+     * @param string|null $nombreArchivo
+     *
+     * @return bool
      */
     public function eliminar(?string $nombreArchivo): bool
     {
@@ -129,9 +184,8 @@ class GestorImagenes
             return true;
         }
 
-        // Prevenir Path Traversal sanitizando a nombre base
         $nombreLimpio = basename($nombreArchivo);
-        $rutaCompleta = $this->directorioDestino . '/' . $nombreLimpio;
+        $rutaCompleta = rtrim($this->directorioUploads, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $nombreLimpio;
 
         if (file_exists($rutaCompleta) && is_file($rutaCompleta)) {
             return unlink($rutaCompleta);
@@ -140,8 +194,13 @@ class GestorImagenes
         return true;
     }
 
+    public function getDirectorioUploads(): string
+    {
+        return $this->directorioUploads;
+    }
+
     public function getDirectorioDestino(): string
     {
-        return $this->directorioDestino;
+        return $this->directorioUploads;
     }
 }

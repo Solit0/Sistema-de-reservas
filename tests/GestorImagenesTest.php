@@ -22,13 +22,13 @@ $archivoError = ['error' => UPLOAD_ERR_INI_SIZE];
 assert($gestor->validar($archivoError) !== null, 'Error: Debe detectar error UPLOAD_ERR_INI_SIZE.');
 echo "✔ [PASS] Detección de errores nativos de subida de PHP.\n";
 
-// 3. Archivo que excede tamaño máximo (> 2MB)
+// 3. Archivo que excede tamaño máximo (> 3MB)
 $archivoPesado = [
     'error' => UPLOAD_ERR_OK,
-    'size' => 3 * 1024 * 1024,
+    'size' => 4 * 1024 * 1024,
     'tmp_name' => tempnam(sys_get_temp_dir(), 'img_heavy')
 ];
-assert(str_contains((string) $gestor->validar($archivoPesado), '2 MB'), 'Error: Debe rechazar archivos mayores a 2MB.');
+assert(str_contains((string) $gestor->validar($archivoPesado), '3 MB'), 'Error: Debe rechazar archivos mayores a 3MB.');
 @unlink($archivoPesado['tmp_name']);
 echo "✔ [PASS] Validación estricta de tamaño máximo de archivo.\n";
 
@@ -40,7 +40,7 @@ $archivoInvalido = [
     'size' => filesize($tmpPhp),
     'tmp_name' => $tmpPhp
 ];
-assert(str_contains((string) $gestor->validar($archivoInvalido), 'JPG, PNG y WEBP'), 'Error: Debe rechazar tipos MIME no admitidos.');
+assert(str_contains((string) $gestor->validar($archivoInvalido), 'JPEG, PNG y WEBP'), 'Error: Debe rechazar tipos MIME no admitidos.');
 @unlink($tmpPhp);
 echo "✔ [PASS] Verificación segura de tipo MIME real con Fileinfo.\n";
 
@@ -60,13 +60,29 @@ assert($nombreGuardado !== null && str_ends_with($nombreGuardado, '.png'), 'Erro
 assert(file_exists($directorioPruebas . '/' . $nombreGuardado), 'Error: El archivo debe existir en la carpeta destino.');
 echo "✔ [PASS] Subida exitosa con renombrado aleatorio.\n";
 
-// Eliminación
+// 6. Pruebas de seguridad de eliminación y mitigación de Path Traversal
+assert($gestor->eliminarImagen(null) === false, 'Error: null debe retornar false en eliminarImagen.');
+assert($gestor->eliminarImagen('') === false, 'Error: cadena vacía debe retornar false.');
+assert($gestor->eliminarImagen('   ') === false, 'Error: espacios deben retornar false.');
+assert($gestor->eliminarImagen('../../../etc/passwd') === false, 'Error: Path traversal debe rechazarse.');
+assert($gestor->eliminarImagen('..') === false, 'Error: .. debe rechazarse.');
+assert($gestor->eliminarImagen('.') === false, 'Error: . debe rechazarse.');
+assert($gestor->eliminarImagen('archivo_fantasma_123.jpg') === false, 'Error: archivo inexistente debe retornar false.');
+echo "✔ [PASS] Mitigación efectiva de ataques de Path Traversal y manejo de nulos.\n";
+
+// 7. Eliminación física real en disco exitosa
+$testFile = 'foto_prueba.jpg';
+file_put_contents($directorioPruebas . '/' . $testFile, 'dummy image content');
+assert(file_exists($directorioPruebas . '/' . $testFile));
+assert($gestor->eliminarImagen($testFile) === true);
+assert(!file_exists($directorioPruebas . '/' . $testFile));
+
 assert($gestor->eliminar($nombreGuardado) === true, 'Error: eliminar() debe retornar true.');
 assert(!file_exists($directorioPruebas . '/' . $nombreGuardado), 'Error: El archivo debe eliminarse físicamente.');
-echo "✔ [PASS] Eliminación física segura de archivos en disco.\n";
+echo "✔ [PASS] Eliminación física real en disco exitosa.\n";
 
 // Limpieza de directorio de pruebas
 @unlink($tmpPng);
 @rmdir($directorioPruebas);
 
-echo "\nTODAS LAS PRUEBAS DE GESTOR DE IMÁGENES PASARON EXITOSAMENTE (5/5).\n";
+echo "\nTODAS LAS PRUEBAS DE GESTOR DE IMÁGENES PASARON EXITOSAMENTE.\n";

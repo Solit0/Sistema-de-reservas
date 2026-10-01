@@ -18,6 +18,14 @@ if (!function_exists('e')) {
         return htmlspecialchars($v ?? '', ENT_QUOTES, 'UTF-8'); // [SEGURIDAD] Escape contra XSS
     }
 }
+// Detección contextual de la ruta actual para marcar el enlace activo en la barra de navegación
+$rutaActual = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?? '';
+$esActivo = static function (string $ruta) use ($rutaActual): string {
+    if ($ruta === '/index.php') {
+        return ($rutaActual === '/' || $rutaActual === '/index.php' || $rutaActual === '') ? ' activo' : '';
+    }
+    return str_starts_with($rutaActual, $ruta) ? ' activo' : '';
+};
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -38,12 +46,12 @@ if (!function_exists('e')) {
             </div>
             <nav class="navegacion-principal">
                 <ul class="menu-navegacion">
-                    <li><a href="/index.php" class="nav-link">Inicio</a></li>
-                    <li><a href="/espacios/index.php" class="nav-link">Espacios</a></li>
-                    <li><a href="/espacios/crear.php" class="nav-link">Nuevo Espacio</a></li>
-                    <li><a href="/reservas/index.php" class="nav-link">Reservas</a></li>
-                    <li><a href="/reservas/crear.php" class="nav-link">Nueva Reserva</a></li>
-                    <li><a href="/espacios/reporte.php" class="nav-link">Reporte Financiero</a></li>
+                    <li><a href="/index.php" class="nav-link<?= $esActivo('/index.php') ?>">Inicio</a></li>
+                    <li><a href="/espacios/index.php" class="nav-link<?= $esActivo('/espacios/index.php') ?>">Espacios</a></li>
+                    <li><a href="/espacios/crear.php" class="nav-link<?= $esActivo('/espacios/crear.php') ?>">Nuevo Espacio</a></li>
+                    <li><a href="/reservas/index.php" class="nav-link<?= $esActivo('/reservas/index.php') ?>">Reservas</a></li>
+                    <li><a href="/reservas/crear.php" class="nav-link<?= $esActivo('/reservas/crear.php') ?>">Nueva Reserva</a></li>
+                    <li><a href="/espacios/reporte.php" class="nav-link<?= $esActivo('/espacios/reporte.php') ?>">Reporte Financiero</a></li>
                 </ul>
             </nav>
         </div>

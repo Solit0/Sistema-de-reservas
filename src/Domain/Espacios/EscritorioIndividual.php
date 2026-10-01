@@ -10,9 +10,9 @@ final class EscritorioIndividual extends Espacio
 {
     private const PRECIO_POR_HORA = 75.0;
 
-    public function __construct(string $nombre, int $capacidad = 1, ?string $imagen = null)
+    public function __construct(string $nombre, int $capacidad = 1, ?string $imagen = null, ?int $id = null)
     {
-        parent::__construct($nombre, $capacidad, $imagen);
+        parent::__construct($nombre, $capacidad, $imagen, $id);
     }
 
     public function getTipo(): string

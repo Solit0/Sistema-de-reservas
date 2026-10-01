@@ -21,7 +21,7 @@ abstract class Espacio implements Reservable
     /** @var Reserva[] */
     private array $reservas = [];
 
-    public function __construct(string $nombre, int $capacidad, ?string $imagen = null)
+    public function __construct(string $nombre, int $capacidad, ?string $imagen = null, ?int $id = null)
     {
         if (trim($nombre) === '') {
             throw new InvalidArgumentException('El nombre del espacio no puede estar vacío.');
@@ -31,8 +31,14 @@ abstract class Espacio implements Reservable
             throw new InvalidArgumentException('La capacidad debe ser mayor a cero.');
         }
 
-        self::$contador++;
-        $this->id = self::$contador;
+        if ($id !== null) {
+            // Se usa el id real de la base de datos y el contador no avanza.
+            $this->id = $id;
+        } else {
+            self::$contador++;
+            $this->id = self::$contador;
+        }
+
         $this->nombre = $nombre;
         $this->capacidad = $capacidad;
         $this->imagen = $imagen;

@@ -11,9 +11,9 @@ final class SalaReunion extends Espacio
     private const PRECIO_POR_HORA = 180.0;
     private const RECARGO_PICO = 0.25;
 
-    public function __construct(string $nombre, int $capacidad = 8, ?string $imagen = null)
+    public function __construct(string $nombre, int $capacidad = 8, ?string $imagen = null, ?int $id = null)
     {
-        parent::__construct($nombre, $capacidad, $imagen);
+        parent::__construct($nombre, $capacidad, $imagen, $id);
     }
 
     public function getTipo(): string

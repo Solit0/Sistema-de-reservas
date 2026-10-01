@@ -11,9 +11,9 @@ final class Cancha extends Espacio
     private const PRECIO_POR_BLOQUE = 120.0;
     private const RECARGO_PICO_POR_BLOQUE = 35.0;
 
-    public function __construct(string $nombre, int $capacidad = 10, ?string $imagen = null)
+    public function __construct(string $nombre, int $capacidad = 10, ?string $imagen = null, ?int $id = null)
     {
-        parent::__construct($nombre, $capacidad, $imagen);
+        parent::__construct($nombre, $capacidad, $imagen, $id);
     }
 
     public function getTipo(): string

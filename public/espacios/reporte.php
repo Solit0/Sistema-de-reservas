@@ -20,10 +20,74 @@ if (!function_exists('e')) {
 }
 
 $ingresosPorTipo = [
-    'Sala de Reunión'       => ['reservas' => 2, 'ingresos' => 810.00],
-    'Cancha'                => ['reservas' => 2, 'ingresos' => 395.00],
-    'Escritorio Individual' => ['reservas' => 1, 'ingresos' => 187.50],
+    'Sala de Reunión'       => ['reservas' => 0, 'ingresos' => 0.0],
+    'Cancha'                => ['reservas' => 0, 'ingresos' => 0.0],
+    'Escritorio Individual' => ['reservas' => 0, 'ingresos' => 0.0],
 ];
+
+$fuenteReporte = 'Predeterminada';
+
+// Estrategia 1: Carga y agregación dinámica desde MySQL (PDO)
+if (class_exists(\App\Database\Conexion::class) && file_exists(__DIR__ . '/../../config/config.php')) {
+    try {
+        $pdo = \App\Database\Conexion::obtener();
+        $query = 'SELECT e.tipo, COUNT(r.id) AS total_reservas, COALESCE(SUM(r.monto_total), 0) AS total_ingresos
+                  FROM espacios e
+                  LEFT JOIN reservas r ON e.id = r.espacio_id
+                  GROUP BY e.tipo';
+        $stmt = $pdo->query($query);
+        if ($stmt) {
+            $filas = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+            if (!empty($filas)) {
+                $nombresTipo = [
+                    'sala'       => 'Sala de Reunión',
+                    'cancha'     => 'Cancha',
+                    'escritorio' => 'Escritorio Individual',
+                ];
+                $ingresosPorTipo = [];
+                foreach ($filas as $f) {
+                    $tKey = strtolower((string)$f['tipo']);
+                    $label = $nombresTipo[$tKey] ?? ucfirst($tKey);
+                    $ingresosPorTipo[$label] = [
+                        'reservas' => (int)$f['total_reservas'],
+                        'ingresos' => (float)$f['total_ingresos'],
+                    ];
+                }
+                $fuenteReporte = 'Base de Datos (MySQL / PDO)';
+            }
+        }
+    } catch (\Throwable) {
+    }
+}
+
+// Estrategia 2: Fallback a persistencia JSON
+if ($fuenteReporte === 'Predeterminada') {
+    $rutaJson = __DIR__ . '/../../reservas.json';
+    if (file_exists($rutaJson)) {
+        try {
+            $storage = new \App\Services\ReservaStorageService();
+            $datosJson = $storage->leerDeJson($rutaJson);
+            $temp = [
+                'Sala de Reunión'       => ['reservas' => 0, 'ingresos' => 0.0],
+                'Cancha'                => ['reservas' => 0, 'ingresos' => 0.0],
+                'Escritorio Individual' => ['reservas' => 0, 'ingresos' => 0.0],
+            ];
+            foreach ($datosJson as $esp) {
+                $tipoEspacio = (string)($esp['tipo'] ?? 'Otro');
+                if (!isset($temp[$tipoEspacio])) {
+                    $temp[$tipoEspacio] = ['reservas' => 0, 'ingresos' => 0.0];
+                }
+                foreach (($esp['reservas'] ?? []) as $r) {
+                    $temp[$tipoEspacio]['reservas']++;
+                    $temp[$tipoEspacio]['ingresos'] += (float)($r['costo'] ?? 0.0);
+                }
+            }
+            $ingresosPorTipo = $temp;
+            $fuenteReporte = 'Persistencia JSON (Fase 1)';
+        } catch (\Throwable) {
+        }
+    }
+}
 
 $totalIngresos = array_sum(array_column($ingresosPorTipo, 'ingresos'));
 $totalReservas = array_sum(array_column($ingresosPorTipo, 'reservas'));

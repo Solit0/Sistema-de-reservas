@@ -337,17 +337,21 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
                                 $imagenRelativa = $espacio->getImagen();
 
                                 // Validación de la imagen miniatura con fallback seguro a SVG
-                                $imagenExiste = false;
+                                $srcImagen = null;
                                 if ($imagenRelativa !== null && trim($imagenRelativa) !== '') {
-                                    $rutaFisica = __DIR__ . '/../../public/' . ltrim($imagenRelativa, '/');
-                                    if (file_exists($rutaFisica) && !is_dir($rutaFisica)) {
-                                        $imagenExiste = true;
+                                    $rutaLimpia = ltrim(trim($imagenRelativa), '/');
+                                    if (file_exists(__DIR__ . '/../../public/' . $rutaLimpia) && !is_dir(__DIR__ . '/../../public/' . $rutaLimpia)) {
+                                        $srcImagen = '/' . $rutaLimpia;
+                                    } elseif (file_exists(__DIR__ . '/../../public/uploads/' . $rutaLimpia) && !is_dir(__DIR__ . '/../../public/uploads/' . $rutaLimpia)) {
+                                        $srcImagen = '/uploads/' . $rutaLimpia;
+                                    } elseif (file_exists(__DIR__ . '/../../public/img/presets/' . $rutaLimpia) && !is_dir(__DIR__ . '/../../public/img/presets/' . $rutaLimpia)) {
+                                        $srcImagen = '/img/presets/' . $rutaLimpia;
                                     }
                                 }
 
-                                $srcImagen = $imagenExiste
-                                    ? $imagenRelativa
-                                    : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' fill='%23f1f5f9' rx='6'/%3E%3Cpath d='M20 38l6-8 5 6 7-10 10 12H20z' fill='%23cbd5e1'/%3E%3Ccircle cx='26' cy='22' r='3' fill='%2394a3b8'/%3E%3C/svg%3E";
+                                if ($srcImagen === null) {
+                                    $srcImagen = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' fill='%23f1f5f9' rx='6'/%3E%3Cpath d='M20 38l6-8 5 6 7-10 10 12H20z' fill='%23cbd5e1'/%3E%3Ccircle cx='26' cy='22' r='3' fill='%2394a3b8'/%3E%3C/svg%3E";
+                                }
                                 ?>
                                 <tr>
                                     <td>

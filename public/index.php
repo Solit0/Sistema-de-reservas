@@ -508,15 +508,6 @@ require_once __DIR__ . '/../views/layout/encabezado.php';
                 <h1><?= e($tituloPagina) ?></h1>
                 <p>Supervisión en tiempo real de espacios disponibles, reservas registradas y accesos rápidos.</p>
             </div>
-            <div class="dashboard-header-metas">
-                <div class="badge-estado">
-                    <span class="punto-indicador"></span>
-                    <span>Sistema Operativo</span>
-                </div>
-                <div class="badge-estado" title="Origen de las métricas renderizadas">
-                    <span>Fuente: <strong><?= e($fuenteDatos) ?></strong></span>
-                </div>
-            </div>
         </div>
     </header>
 
@@ -621,7 +612,7 @@ require_once __DIR__ . '/../views/layout/encabezado.php';
                     <div>
                         <h2>Espacios Registrados</h2>
                         <p style="margin: 0; color: var(--color-texto-mutado); font-size: 0.9rem;">
-                            Datos sincronizados dinámicamente desde <?= e($fuenteDatos) ?>.
+                            Datos de espacios sincronizados en tiempo real.
                         </p>
                     </div>
                     <a href="espacios/crear.php" class="btn btn-acento" style="font-size: 0.85rem; padding: 0.45rem 0.9rem;">

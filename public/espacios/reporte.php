@@ -124,7 +124,7 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
         <div>
             <span style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; background: #f1f5f9; color: var(--color-secundario); padding: 0.35rem 0.75rem; border-radius: 9999px; border: 1px solid var(--color-borde); font-weight: 600;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                Fuente: <?= e($fuenteReporte) ?>
+                Consolidado en Tiempo Real
             </span>
         </div>
     </div>

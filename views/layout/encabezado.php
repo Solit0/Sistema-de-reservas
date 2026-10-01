@@ -41,7 +41,6 @@ $esActivo = static function (string $ruta) use ($rutaActual): string {
             <div class="marca">
                 <a href="/index.php" class="logo">
                     <span>Sistema de Reservas</span>
-                    <span class="caso-estudio">(Caso A)</span>
                 </a>
             </div>
             <nav class="navegacion-principal">

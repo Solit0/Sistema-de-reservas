@@ -79,7 +79,7 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
         <div>
             <h1 style="margin: 0; font-size: 1.85rem;"><?= e($tituloPagina) ?></h1>
             <p style="margin: 0.25rem 0 0 0; color: var(--color-texto-mutado); font-size: 0.9rem;">
-                Supervisión de agendas y estado de cobros (Fuente: <?= e($fuente) ?>).
+                Supervisión de agendas y estado de cobros en tiempo real.
             </p>
         </div>
         <div>

@@ -111,6 +111,23 @@ abstract class Espacio implements Reservable
 
     abstract public function getTipo(): string;
 
+    /**
+     * Retorna las especificaciones técnicas particulares del espacio.
+     * [POLIMORFISMO] Cada subclase implementa sus propios atributos específicos
+     * resolviendo el contrato sin necesidad de comprobación de tipos.
+     *
+     * @return array<string, string>
+     */
+    abstract public function obtenerCaracteristicas(): array;
+
+    /**
+     * Retorna una descripción informativa del espacio.
+     */
+    public function obtenerDescripcion(): string
+    {
+        return 'Espacio acondicionado profesionalmente para garantizar máxima comodidad, rendimiento y productividad.';
+    }
+
     public function __toString(): string
     {
         return sprintf('[%s] %s (cap: %d)', $this->getTipo(), $this->nombre, $this->capacidad);

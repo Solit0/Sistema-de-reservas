@@ -190,4 +190,17 @@ final class EspacioRepositorio
                 : null,
         ]);
     }
+
+    /**
+     * [CRUD-DELETE] Elimina un espacio por su id.
+     *
+     * @param int $id Identificador único del espacio a eliminar.
+     *
+     * @return bool True si la sentencia se ejecutó correctamente.
+     */
+    public function eliminar(int $id): bool
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM espacios WHERE id = :id');
+        return $stmt->execute([':id' => $id]);
+    }
 }

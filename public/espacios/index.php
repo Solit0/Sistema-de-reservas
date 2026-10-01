@@ -24,6 +24,7 @@ use App\Domain\Espacios\Cancha;
 use App\Domain\Espacios\EscritorioIndividual;
 use App\Domain\Espacios\Espacio;
 use App\Domain\Espacios\SalaReunion;
+use App\Security\Csrf;
 
 // [SEGURIDAD] Definición de función auxiliar de escape contextual contra XSS
 if (!function_exists('e')) {
@@ -64,7 +65,8 @@ if (!isset($espacios)) {
                     $instancia = new $clase(
                         (string) $row['nombre'],
                         (int) $row['capacidad'],
-                        $row['imagen'] ? (string) $row['imagen'] : null
+                        $row['imagen'] ? (string) $row['imagen'] : null,
+                        (int) $row['id']
                     );
                     $espacios[] = $instancia;
                 }
@@ -82,18 +84,22 @@ if (empty($espacios)) {
         try {
             $storage = new \App\Services\ReservaStorageService();
             $datosJson = $storage->leerDeJson($rutaJson);
+            $contador = 1;
             foreach ($datosJson as $item) {
+                $idItem = isset($item['id']) ? (int) $item['id'] : $contador;
                 $tipoNormalizado = mb_strtolower((string) ($item['tipo'] ?? ''));
                 $nombre = (string) ($item['espacio'] ?? 'Espacio');
                 $capacidad = (int) ($item['capacidad'] ?? 1);
+                $imagen = !empty($item['imagen']) ? (string) $item['imagen'] : null;
 
                 if (str_contains($tipoNormalizado, 'cancha')) {
-                    $espacios[] = new Cancha($nombre, $capacidad);
+                    $espacios[] = new Cancha($nombre, $capacidad, $imagen, $idItem);
                 } elseif (str_contains($tipoNormalizado, 'sala')) {
-                    $espacios[] = new SalaReunion($nombre, $capacidad);
+                    $espacios[] = new SalaReunion($nombre, $capacidad, $imagen, $idItem);
                 } elseif (str_contains($tipoNormalizado, 'escritorio')) {
-                    $espacios[] = new EscritorioIndividual($nombre, $capacidad);
+                    $espacios[] = new EscritorioIndividual($nombre, $capacidad, $imagen, $idItem);
                 }
+                $contador++;
             }
         } catch (\Throwable) {
             // Manejo de contingencia silencioso
@@ -378,11 +384,22 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
                                             Estándar 2 horas
                                         </small>
                                     </td>
-                                    <td style="text-align: right;">
+                                    <td style="text-align: right; white-space: nowrap;">
                                         <!-- [SEGURIDAD] Sanitización de salida contra vectores XSS -->
-                                        <a href="ver.php?id=<?= e((string) $idEspacio) ?>" class="btn btn-secundario btn-sm">
+                                        <a href="ver.php?id=<?= e((string) $idEspacio) ?>" class="btn btn-secundario btn-sm" title="Ver ficha técnica">
                                             Ficha Técnica
                                         </a>
+                                        <a href="editar.php?id=<?= e((string) $idEspacio) ?>" class="btn btn-secundario btn-sm" style="margin-left: 0.25rem;" title="Editar espacio">
+                                            Editar
+                                        </a>
+                                        <!-- [CRUD-DELETE] Eliminación procesada estrictamente por POST con CSRF -->
+                                        <form action="eliminar.php" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este espacio?');" style="display: inline; margin-left: 0.25rem;">
+                                            <?= Csrf::campoHtml() ?>
+                                            <input type="hidden" name="id" value="<?= e((string) $idEspacio) ?>">
+                                            <button type="submit" class="btn btn-peligro btn-sm" title="Eliminar espacio">
+                                                Eliminar
+                                            </button>
+                                        </form>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>

@@ -22,6 +22,7 @@ use App\Domain\Espacios\EscritorioIndividual;
 use App\Domain\Espacios\Espacio;
 use App\Domain\Espacios\SalaReunion;
 use App\Repositories\EspacioRepositorio;
+use App\Security\Csrf;
 use App\Services\ReservaStorageService;
 
 // Iniciar sesión PHP si aún no está activa para manejo de mensajes de estado
@@ -460,7 +461,21 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
                 </div>
             </div>
         </div>
-        <div>
+        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+            <!-- [CRUD-UPDATE] Enlace al formulario de edición con precarga -->
+            <a href="editar.php?id=<?= e((string) $idSolicitado) ?>" class="btn btn-secundario" style="font-weight: 600; padding: 0.75rem 1.1rem;">
+                ✏️ Editar Espacio
+            </a>
+
+            <!-- [CRUD-DELETE] Formulario de borrado seguro estrictamente por POST con CSRF -->
+            <form action="eliminar.php" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar permanentemente este espacio? Esta acción no se puede deshacer.');" style="display: inline; margin: 0;">
+                <?= Csrf::campoHtml() ?>
+                <input type="hidden" name="id" value="<?= e((string) $idSolicitado) ?>">
+                <button type="submit" class="btn btn-peligro" style="font-weight: 600; padding: 0.75rem 1.1rem;">
+                    🗑️ Eliminar
+                </button>
+            </form>
+
             <!-- [SEGURIDAD] Escapado riguroso con htmlspecialchars para prevenir XSS -->
             <a href="/reservas/crear.php?espacio_id=<?= e((string) $idSolicitado) ?>" class="btn btn-acento" style="font-weight: 700; padding: 0.75rem 1.4rem;">
                 Reservar este Espacio &rarr;

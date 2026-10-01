@@ -10,8 +10,9 @@ declare(strict_types=1);
  * métricas clave (KPIs) en tiempo real sobre espacios y reservas, además de accesos
  * directos a las operaciones frecuentes.
  *
- * Arquitectura y Seguridad:
+ * Arquitectura, Diseño y Seguridad:
  * - Cumple con PHP 8.2+ en modo estricto tipado.
+ * - Iconografía vectorial SVG profesional y sobria (sin emojis).
  * - [SEGURIDAD] Escapado contextual de datos contra XSS en toda salida al DOM.
  * - Obtención de datos dinámica: Conexión PDO a MySQL con fallback dinámico
  *   a persistencia JSON (reservas.json) mediante ReservaStorageService.
@@ -135,6 +136,17 @@ if ($metricas['totalCanchas'] === 0 && $metricas['totalSalas'] === 0 && $metrica
     $fuenteDatos = 'Valores por Defecto (Seed)';
 }
 
+// Colección de iconos vectoriales SVG limpios y profesionales
+$iconosSvg = [
+    'cancha' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>',
+    'sala' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+    'escritorio' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>',
+    'reserva' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>',
+    'espacios' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+    'nuevo' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>',
+    'lista' => '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="m9 14 2 2 4-4"/></svg>',
+];
+
 // Configuración de tarjetas de métricas para renderizado enriquecido
 $tarjetas = [
     [
@@ -142,7 +154,7 @@ $tarjetas = [
         'etiqueta'    => 'Total de Canchas',
         'valor'       => $metricas['totalCanchas'],
         'descripcion' => 'Canchas sintéticas y de grama natural',
-        'icono'       => '⚽',
+        'icono_svg'   => $iconosSvg['cancha'],
         'color'       => '#16a34a',
         'bg_color'    => '#f0fdf4',
         'badge'       => 'Deportes',
@@ -152,7 +164,7 @@ $tarjetas = [
         'etiqueta'    => 'Total de Salas',
         'valor'       => $metricas['totalSalas'],
         'descripcion' => 'Salas ejecutivas y de conferencias',
-        'icono'       => '🏢',
+        'icono_svg'   => $iconosSvg['sala'],
         'color'       => '#2563eb',
         'bg_color'    => '#eff6ff',
         'badge'       => 'Reuniones',
@@ -162,7 +174,7 @@ $tarjetas = [
         'etiqueta'    => 'Total de Escritorios',
         'valor'       => $metricas['totalEscritorios'],
         'descripcion' => 'Puestos de trabajo individuales coworking',
-        'icono'       => '💻',
+        'icono_svg'   => $iconosSvg['escritorio'],
         'color'       => '#d97706',
         'bg_color'    => '#fffbeb',
         'badge'       => 'Coworking',
@@ -172,7 +184,7 @@ $tarjetas = [
         'etiqueta'    => 'Total de Reservas Activas',
         'valor'       => $metricas['totalReservasActivas'],
         'descripcion' => 'Reservas registradas y vigentes',
-        'icono'       => '📅',
+        'icono_svg'   => $iconosSvg['reserva'],
         'color'       => '#7c3aed',
         'bg_color'    => '#f5f3ff',
         'badge'       => 'Activas',
@@ -276,7 +288,7 @@ require_once __DIR__ . '/../views/layout/encabezado.php';
         box-shadow: var(--sombra-sm);
     }
 
-    .punto-verde {
+    .punto-indicador {
         width: 8px;
         height: 8px;
         background-color: var(--color-exito);
@@ -331,7 +343,7 @@ require_once __DIR__ . '/../views/layout/encabezado.php';
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.25rem;
+        flex-shrink: 0;
     }
 
     .tarjeta-metrica-cuerpo .metrica-valor {
@@ -411,7 +423,6 @@ require_once __DIR__ . '/../views/layout/encabezado.php';
     }
 
     .btn-icono-emblema {
-        font-size: 1.5rem;
         width: 44px;
         height: 44px;
         background: rgba(255, 255, 255, 0.18);
@@ -470,6 +481,15 @@ require_once __DIR__ . '/../views/layout/encabezado.php';
         padding: 0.2rem 0.55rem;
         border-radius: 4px;
     }
+
+    .estado-activo {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: var(--color-exito);
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
 </style>
 
 <!-- ======================================================================= -->
@@ -482,7 +502,7 @@ require_once __DIR__ . '/../views/layout/encabezado.php';
         <div class="dashboard-header-container">
             <div class="dashboard-header-titulos">
                 <span class="chip-indicador">
-                    <span>⚡</span> Panel Principal
+                    Panel de Control
                 </span>
                 <!-- [SEGURIDAD] Escapado contextual de datos contra XSS -->
                 <h1><?= e($tituloPagina) ?></h1>
@@ -490,7 +510,7 @@ require_once __DIR__ . '/../views/layout/encabezado.php';
             </div>
             <div class="dashboard-header-metas">
                 <div class="badge-estado">
-                    <span class="punto-verde"></span>
+                    <span class="punto-indicador"></span>
                     <span>Sistema Operativo</span>
                 </div>
                 <div class="badge-estado" title="Origen de las métricas renderizadas">
@@ -516,7 +536,7 @@ require_once __DIR__ . '/../views/layout/encabezado.php';
                             class="tarjeta-icono-caja"
                             style="background-color: <?= e($tarjeta['bg_color']) ?>; color: <?= e($tarjeta['color']) ?>;"
                         >
-                            <?= e($tarjeta['icono']) ?>
+                            <?= $tarjeta['icono_svg'] ?>
                         </div>
                     </div>
 
@@ -545,7 +565,7 @@ require_once __DIR__ . '/../views/layout/encabezado.php';
     <section class="seccion-acciones" aria-label="Acciones y accesos directos">
         <article class="panel panel-acciones-moderno">
             <header class="panel-header">
-                <h2><span>⚡</span> Acciones Rápidas</h2>
+                <h2>Acciones Rápidas</h2>
                 <p style="margin: 0; color: var(--color-texto-mutado); font-size: 0.95rem;">
                     Selecciona una operación frecuente para comenzar a gestionar el sistema:
                 </p>
@@ -554,7 +574,9 @@ require_once __DIR__ . '/../views/layout/encabezado.php';
             <div class="panel-cuerpo">
                 <div class="grid-botones-acciones">
                     <a href="espacios/index.php" class="btn btn-primario btn-tarjeta-accion">
-                        <span class="btn-icono-emblema">🏢</span>
+                        <span class="btn-icono-emblema">
+                            <?= $iconosSvg['espacios'] ?>
+                        </span>
                         <div class="btn-texto-contenedor">
                             <!-- [SEGURIDAD] Escapado contextual de datos contra XSS -->
                             <strong><?= e('Ver todos los espacios') ?></strong>
@@ -564,7 +586,9 @@ require_once __DIR__ . '/../views/layout/encabezado.php';
                     </a>
 
                     <a href="espacios/crear.php" class="btn btn-acento btn-tarjeta-accion">
-                        <span class="btn-icono-emblema">➕</span>
+                        <span class="btn-icono-emblema">
+                            <?= $iconosSvg['nuevo'] ?>
+                        </span>
                         <div class="btn-texto-contenedor">
                             <!-- [SEGURIDAD] Escapado contextual de datos contra XSS -->
                             <strong><?= e('Registrar nuevo espacio') ?></strong>
@@ -574,7 +598,9 @@ require_once __DIR__ . '/../views/layout/encabezado.php';
                     </a>
 
                     <a href="reservas/index.php" class="btn btn-secundario btn-tarjeta-accion">
-                        <span class="btn-icono-emblema">📋</span>
+                        <span class="btn-icono-emblema">
+                            <?= $iconosSvg['lista'] ?>
+                        </span>
                         <div class="btn-texto-contenedor">
                             <!-- [SEGURIDAD] Escapado contextual de datos contra XSS -->
                             <strong><?= e('Ver reservas activas') ?></strong>
@@ -593,7 +619,7 @@ require_once __DIR__ . '/../views/layout/encabezado.php';
             <article class="panel panel-acciones-moderno">
                 <header class="panel-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                     <div>
-                        <h2><span>📍</span> Espacios Registrados</h2>
+                        <h2>Espacios Registrados</h2>
                         <p style="margin: 0; color: var(--color-texto-mutado); font-size: 0.9rem;">
                             Datos sincronizados dinámicamente desde <?= e($fuenteDatos) ?>.
                         </p>
@@ -634,8 +660,9 @@ require_once __DIR__ . '/../views/layout/encabezado.php';
                                             </span>
                                         </td>
                                         <td>
-                                            <span style="color: var(--color-exito); font-weight: 600; font-size: 0.85rem;">
-                                                ● Disponible
+                                            <span class="estado-activo">
+                                                <span class="punto-indicador"></span>
+                                                Disponible
                                             </span>
                                         </td>
                                     </tr>

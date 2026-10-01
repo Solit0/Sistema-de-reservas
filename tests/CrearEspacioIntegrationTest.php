@@ -86,26 +86,98 @@ assert($errorImg !== null, 'Error: Archivo de texto plano no debe pasar validaci
 @unlink($archivoTextoFalso['tmp_name']);
 echo "✔ [PASS] GestorImagenes: detecta y rechaza archivos con formato MIME indebido.\n";
 
-// 5. Inserción mediante sentencia preparada en EspacioRepositorio (usando SQLite en memoria para test unitario)
-$pdoMemory = new PDO('sqlite::memory:', null, null, [
-    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-]);
+// 5. Inserción mediante sentencia preparada en EspacioRepositorio (SQLite o FakePDO en memoria)
+if (extension_loaded('pdo_sqlite') && in_array('sqlite', PDO::getAvailableDrivers(), true)) {
+    $pdoMemory = new PDO('sqlite::memory:', null, null, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]);
 
-$pdoMemory->exec('
-    CREATE TABLE espacios (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        tipo TEXT NOT NULL,
-        nombre TEXT NOT NULL,
-        tarifa_base REAL NOT NULL,
-        capacidad INTEGER NOT NULL,
-        imagen TEXT,
-        tipo_grama TEXT,
-        iluminacion_nocturna INTEGER,
-        tiene_computadora INTEGER,
-        tiene_proyector INTEGER
-    )
-');
+    $pdoMemory->exec('
+        CREATE TABLE espacios (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            tipo TEXT NOT NULL,
+            nombre TEXT NOT NULL,
+            tarifa_base REAL NOT NULL,
+            capacidad INTEGER NOT NULL,
+            imagen TEXT,
+            tipo_grama TEXT,
+            iluminacion_nocturna INTEGER,
+            tiene_computadora INTEGER,
+            tiene_proyector INTEGER
+        )
+    ');
+} else {
+    class FakeEspacioPDO extends PDO
+    {
+        /** @var array<int, array<string, mixed>> */
+        public array $espacios = [];
+        public int $lastId = 0;
+
+        public function __construct() {}
+
+        public function lastInsertId(?string $name = null): string
+        {
+            return (string)$this->lastId;
+        }
+
+        public function prepare(string $query, array $options = []): PDOStatement
+        {
+            $pdo = $this;
+
+            return new class($pdo, $query) extends PDOStatement {
+                private FakeEspacioPDO $pdo;
+                private string $query;
+                /** @var array<string, mixed>|false */
+                private array|false $fila = false;
+
+                public function __construct(FakeEspacioPDO $pdo, string $query)
+                {
+                    $this->pdo = $pdo;
+                    $this->query = $query;
+                }
+
+                public function execute(?array $params = null): bool
+                {
+                    $params = $params ?? [];
+
+                    if (stripos($this->query, 'INSERT INTO espacios') !== false) {
+                        $this->pdo->lastId++;
+                        $id = $this->pdo->lastId;
+                        $this->pdo->espacios[$id] = [
+                            'id' => $id,
+                            'tipo' => $params[':tipo'] ?? '',
+                            'nombre' => $params[':nombre'] ?? '',
+                            'tarifa_base' => $params[':tarifa_base'] ?? 0.0,
+                            'capacidad' => $params[':capacidad'] ?? 0,
+                            'imagen' => $params[':imagen'] ?? null,
+                            'tipo_grama' => $params[':tipo_grama'] ?? null,
+                            'iluminacion_nocturna' => $params[':iluminacion_nocturna'] ?? null,
+                            'tiene_computadora' => $params[':tiene_computadora'] ?? null,
+                            'tiene_proyector' => $params[':tiene_proyector'] ?? null,
+                        ];
+                        return true;
+                    }
+
+                    if (stripos($this->query, 'WHERE id = :id') !== false) {
+                        $id = (int)($params[':id'] ?? 0);
+                        $this->fila = $this->pdo->espacios[$id] ?? false;
+                        return true;
+                    }
+
+                    return true;
+                }
+
+                public function fetch(int $mode = PDO::FETCH_DEFAULT, int $cursorOrientation = PDO::FETCH_ORI_NEXT, int $cursorOffset = 0): mixed
+                {
+                    return $this->fila;
+                }
+            };
+        }
+    }
+
+    $pdoMemory = new FakeEspacioPDO();
+}
 
 $repoMemory = new EspacioRepositorio($pdoMemory);
 $idInsertado = $repoMemory->insertar([

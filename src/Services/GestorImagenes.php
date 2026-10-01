@@ -7,14 +7,6 @@ namespace App\Services;
 use InvalidArgumentException;
 use RuntimeException;
 
-/**
- * Gestor de subida y almacenamiento seguro de archivos multimedia.
- *
- * [SEGURIDAD]
- * - Inspección binaria estricta de Magic Bytes mediante finfo_file (no confía en Content-Type del cliente).
- * - Generación de nombres criptográficamente aleatorios con random_bytes() para mitigar Path Traversal y sobreescrituras.
- * - Restricción estricta de formatos a solo imágenes web permitidas (PNG, JPEG, WEBP).
- */
 final class GestorImagenes
 {
     private const TIPOS_PERMITIDOS = [
@@ -23,7 +15,7 @@ final class GestorImagenes
         'image/webp' => 'webp',
     ];
 
-    private const MAX_SIZE_BYTES = 3 * 1024 * 1024; // 3 Megabytes
+    private const MAX_SIZE_BYTES = 3 * 1024 * 1024; // 3 MB
 
     private string $directorioUploads;
 
@@ -37,12 +29,7 @@ final class GestorImagenes
     }
 
     /**
-     * [SEGURIDAD] Valida y almacena un archivo subido vía $_FILES.
-     *
-     * @param array<string, mixed> $archivo Estructura de $_FILES['campo']
-     * @return string Nombre del archivo generado almacenado en disco.
-     * @throws InvalidArgumentException Si el archivo no es válido, supera el tamaño o no es una imagen permitida.
-     * @throws RuntimeException Si ocurre un error al mover el archivo a su destino final.
+     * @param array<string, mixed> $archivo
      */
     public function procesarSubida(array $archivo): string
     {
@@ -69,7 +56,6 @@ final class GestorImagenes
             throw new InvalidArgumentException('El archivo subido no es válido o no proviene de una petición HTTP POST.');
         }
 
-        // [SEGURIDAD] Inspección binaria de Magic Bytes usando la extensión nativa fileinfo
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         if ($finfo === false) {
             throw new RuntimeException('No se pudo inicializar la extensión fileinfo en el servidor.');
@@ -85,7 +71,6 @@ final class GestorImagenes
             ));
         }
 
-        // [SEGURIDAD] Generación de nombre criptográficamente impredecible (32 caracteres hexadecimales)
         $extension = self::TIPOS_PERMITIDOS[$mime];
         $nombreFinal = bin2hex(random_bytes(16)) . '.' . $extension;
         $destino = rtrim($this->directorioUploads, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $nombreFinal;
@@ -102,19 +87,12 @@ final class GestorImagenes
         return $this->directorioUploads;
     }
 
-    /**
-     * [SEGURIDAD] Elimina un archivo físico del directorio de uploads asegurando que no exista Path Traversal.
-     *
-     * @param string|null $nombreArchivo Nombre base del archivo (sin ruta).
-     * @return bool True si se eliminó exitosamente, false si no existía o no se pudo eliminar.
-     */
     public function eliminarImagen(?string $nombreArchivo): bool
     {
         if ($nombreArchivo === null || trim($nombreArchivo) === '') {
             return false;
         }
 
-        // Sanitización contra Directory Traversal
         $nombreLimpio = basename($nombreArchivo);
         if ($nombreLimpio === '' || $nombreLimpio === '.' || $nombreLimpio === '..') {
             return false;

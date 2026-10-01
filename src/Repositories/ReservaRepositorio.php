@@ -6,17 +6,6 @@ namespace App\Repositories;
 
 use PDO;
 
-/**
- * Repositorio de reservas: encapsula las operaciones de persistencia y consultas
- * sobre la tabla `reservas`, incluyendo la verificación matemática de traslapes de horario.
- *
- * [INYECCION-DEPENDENCIAS]
- * Se inyecta la instancia de PDO vía constructor.
- *
- * [CRUD & SEGURIDAD]
- * Todas las sentencias utilizan sentencias preparadas (prepare/execute) con parámetros
- * nombrados, garantizando protección total contra inyecciones SQL.
- */
 final class ReservaRepositorio
 {
     private const SQL_LISTAR_TODAS = 'SELECT r.id, r.espacio_id, r.cliente, r.fecha, r.hora_inicio, r.hora_fin, r.monto_total, r.created_at,
@@ -42,8 +31,6 @@ final class ReservaRepositorio
     }
 
     /**
-     * Lista todas las reservas registradas unidas con la información del espacio.
-     *
      * @return array<int, array<string, mixed>>
      */
     public function listarTodas(): array
@@ -55,9 +42,6 @@ final class ReservaRepositorio
     }
 
     /**
-     * Busca una reserva específica por su ID.
-     *
-     * @param int $id
      * @return array<string, mixed>|null
      */
     public function buscarPorId(int $id): ?array
@@ -69,19 +53,6 @@ final class ReservaRepositorio
         return is_array($resultado) ? $resultado : null;
     }
 
-    /**
-     * [ALGORITMO-TRASLAPE]
-     * Verifica si existe conflicto horario para un espacio en una fecha dada.
-     * Dos intervalos [A, B] y [C, D] se traslapan si y solo si: A < D && B > C.
-     * En SQL: hora_inicio < :hora_fin AND hora_fin > :hora_inicio.
-     *
-     * @param int $espacioId ID del espacio a verificar.
-     * @param string $fecha Fecha de la reserva (formato Y-m-d).
-     * @param string $horaInicio Hora de inicio (formato H:i o H:i:s).
-     * @param string $horaFin Hora de fin (formato H:i o H:i:s).
-     * @param int|null $excluirId ID de reserva a excluir (útil al editar).
-     * @return bool True si hay traslape (espacio ocupado), false si está libre.
-     */
     public function existeTraslape(
         int $espacioId,
         string $fecha,
@@ -113,17 +84,6 @@ final class ReservaRepositorio
         return ((int)$stmt->fetchColumn()) > 0;
     }
 
-    /**
-     * Registra una nueva reserva en la base de datos.
-     *
-     * @param int $espacioId
-     * @param string $cliente
-     * @param string $fecha
-     * @param string $horaInicio
-     * @param string $horaFin
-     * @param float $montoTotal
-     * @return int ID de la reserva insertada.
-     */
     public function registrar(
         int $espacioId,
         string $cliente,
@@ -145,12 +105,6 @@ final class ReservaRepositorio
         return (int)$this->pdo->lastInsertId();
     }
 
-    /**
-     * Elimina una reserva de la base de datos por su ID.
-     *
-     * @param int $id
-     * @return bool True si se eliminó alguna fila.
-     */
     public function eliminar(int $id): bool
     {
         $stmt = $this->pdo->prepare(self::SQL_ELIMINAR);

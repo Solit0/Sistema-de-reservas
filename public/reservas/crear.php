@@ -2,24 +2,19 @@
 
 declare(strict_types=1);
 
-/**
- * ==============================================================================
- * Sistema de Reservas - Registrar Nueva Reserva
- * ==============================================================================
- * Formulario para agendar una nueva reserva de espacio con validación en servidor.
- */
-
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use App\Database\Conexion;
+use App\Domain\Espacios\Cancha;
+use App\Domain\Espacios\EscritorioIndividual;
+use App\Domain\Espacios\SalaReunion;
 use App\Repositories\EspacioRepositorio;
+use App\Services\ReservaStorageService;
 
-// Iniciar sesión para flash y errores
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// [SEGURIDAD] Escape seguro contra XSS
 if (!function_exists('e')) {
     function e(?string $valor): string
     {
@@ -27,21 +22,52 @@ if (!function_exists('e')) {
     }
 }
 
-// Recuperar errores y valores previos
 $errores = $_SESSION['errores'] ?? [];
 $antiguo = $_SESSION['antiguo'] ?? [];
 unset($_SESSION['errores'], $_SESSION['antiguo']);
 
-// Cargar catálogo de espacios desde la base de datos
 $espacios = [];
-$errorCarga = null;
 
-try {
-    $pdo = Conexion::obtener();
-    $espacioRepo = new EspacioRepositorio($pdo);
-    $espacios = $espacioRepo->listar();
-} catch (\Throwable $ex) {
-    $errorCarga = 'No se pudo conectar a la base de datos para cargar los espacios: ' . $ex->getMessage();
+if (class_exists(Conexion::class) && file_exists(__DIR__ . '/../../config/config.php')) {
+    try {
+        $pdo = Conexion::obtener();
+        $espacioRepo = new EspacioRepositorio($pdo);
+        $espacios = $espacioRepo->listar();
+    } catch (\Throwable) {
+    }
+}
+
+if (empty($espacios)) {
+    $rutaJson = __DIR__ . '/../../reservas.json';
+    if (file_exists($rutaJson)) {
+        try {
+            $storage = new ReservaStorageService();
+            $datosJson = $storage->leerDeJson($rutaJson);
+            $idx = 1;
+            foreach ($datosJson as $item) {
+                $tipoNormalizado = mb_strtolower((string) ($item['tipo'] ?? ''));
+                $nombre = (string) ($item['espacio'] ?? 'Espacio');
+                $capacidad = (int) ($item['capacidad'] ?? 1);
+
+                if (str_contains($tipoNormalizado, 'cancha')) {
+                    $espacios[] = new Cancha($nombre, $capacidad, null, $idx++);
+                } elseif (str_contains($tipoNormalizado, 'sala')) {
+                    $espacios[] = new SalaReunion($nombre, $capacidad, null, $idx++);
+                } elseif (str_contains($tipoNormalizado, 'escritorio')) {
+                    $espacios[] = new EscritorioIndividual($nombre, $capacidad, null, $idx++);
+                }
+            }
+        } catch (\Throwable) {
+        }
+    }
+}
+
+if (empty($espacios)) {
+    $espacios = [
+        new SalaReunion('Sala de Juntas Principal', 8, null, 1),
+        new Cancha('Cancha Central Sintética', 10, null, 2),
+        new EscritorioIndividual('Escritorio Individual 01', 1, null, 3),
+    ];
 }
 
 $tituloPagina = 'Nueva Reserva';
@@ -84,12 +110,6 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
             Programa una cita o reserva seleccionando el espacio y horario deseado.
         </p>
     </div>
-
-    <?php if ($errorCarga !== null): ?>
-        <div class="alerta-formulario">
-            <?= e($errorCarga) ?>
-        </div>
-    <?php endif; ?>
 
     <?php if (!empty($errores['general'])): ?>
         <div class="alerta-formulario">

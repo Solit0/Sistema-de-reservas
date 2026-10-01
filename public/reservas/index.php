@@ -2,21 +2,12 @@
 
 declare(strict_types=1);
 
-/**
- * ==============================================================================
- * Sistema de Reservas - Listado General de Reservas Activas
- * ==============================================================================
- * Vista del módulo de reservas. Muestra las reservas registradas en el sistema
- * sincronizadas mediante ReservaRepositorio desde la base de datos o fallback JSON.
- */
-
 require_once __DIR__ . '/../../vendor/autoload.php';
 
 use App\Database\Conexion;
 use App\Repositories\ReservaRepositorio;
 use App\Services\ReservaStorageService;
 
-// [SEGURIDAD] Escape seguro contra XSS
 if (!function_exists('e')) {
     function e(?string $valor): string
     {
@@ -27,7 +18,6 @@ if (!function_exists('e')) {
 $reservas = [];
 $fuente = 'Persistencia JSON';
 
-// Estrategia 1: Carga desde MySQL mediante ReservaRepositorio
 if (class_exists(Conexion::class) && file_exists(__DIR__ . '/../../config/config.php')) {
     try {
         $pdo = Conexion::obtener();
@@ -40,7 +30,6 @@ if (class_exists(Conexion::class) && file_exists(__DIR__ . '/../../config/config
     }
 }
 
-// Estrategia 2: Fallback a persistencia JSON
 if (empty($reservas)) {
     $rutaJson = __DIR__ . '/../../reservas.json';
     if (file_exists($rutaJson)) {
@@ -106,7 +95,6 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
 <section class="catalogo-reservas">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--color-borde); padding-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
         <div>
-            <!-- [SEGURIDAD] Sanitización de salida contra vectores XSS -->
             <h1 style="margin: 0; font-size: 2rem;"><?= e($tituloPagina) ?></h1>
             <p style="margin: 0.25rem 0 0 0; color: var(--color-texto-mutado);">
                 Supervisión de agendas, clientes y estado de pagos (Fuente: <?= e($fuente) ?>).
@@ -150,11 +138,9 @@ require_once __DIR__ . '/../../views/layout/encabezado.php';
                             ?>
                             <tr>
                                 <td>
-                                    <!-- [SEGURIDAD] Sanitización de salida contra vectores XSS -->
                                     <strong><?= e((string) $reserva['cliente']) ?></strong>
                                 </td>
                                 <td>
-                                    <!-- [SEGURIDAD] Sanitización de salida contra vectores XSS -->
                                     <span><?= e((string) $reserva['espacio_nombre']) ?></span>
                                 </td>
                                 <td><?= e((string) $reserva['fecha']) ?></td>
